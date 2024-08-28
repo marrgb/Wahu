@@ -1,0 +1,50 @@
+<core:FragmentDefinition
+    xmlns:l="sap.ui.layout"
+	xmlns:f="sap.ui.layout.form"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns="sap.m">
+
+  	<Dialog id="dialog-add-team" title="{i18n>Create}"
+            contentWidth= "550px"
+			contentHeight= "300px"
+			draggable= "true">
+		<VBox id="VboxAddPlayer" class="sapUiSmallMargin">
+			<f:SimpleForm id="SFAddPlayer"
+				editable="true"
+				layout="ResponsiveGridLayout"
+				labelSpanXL="4"
+				labelSpanL="3"
+				labelSpanM="4"
+				labelSpanS="12"
+				adjustLabelSpan="false"
+				emptySpanXL="0"
+				emptySpanL="4"
+				emptySpanM="0"
+				emptySpanS="0"
+				columnsXL="2"
+				columnsL="1"
+				columnsM="1"
+				singleContainerFullSize="false"
+				ariaLabelledBy="Title1" >
+
+                <Label id="lNameAddPlayer" text="{i18n>PlayerName}" />
+				<Input id="fNameAddPlayer" value="{Teams>/currentPlayer/name}"/>
+                <Label id="lPlayerEmailAddPlayer" text="{i18n>PlayerEmail}" />
+				<Input id="fPlayerEmailAddPlayer" value="{Teams>/currentPlayer/email}"/>
+            </f:SimpleForm>
+        </VBox>
+
+        <footer>
+            <Toolbar id="TBEndAddPlayer">
+                <content>
+                <ToolbarSpacer id="TBSpacerAddPlayerEnd" />
+                <Button id="btnCreateAddPlayer" press=".onSaveAddPlayer" text="{i18n>Create}" type="Success"
+                    class="sapUiTinyMarginTop sapUiTinyMarginBottom" />
+                <Button id="btnCloseAddPlayer" press=".onPressCloseDialogAddPlayer" text="{i18n>Close}" type="Reject"
+                    class="sapUiTinyMarginTop sapUiTinyMarginBottom" />
+                </content>
+			</Toolbar>
+      </footer>
+    </Dialog>
+</core:FragmentDefinition>

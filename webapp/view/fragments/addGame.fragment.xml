@@ -1,0 +1,54 @@
+<core:FragmentDefinition
+    xmlns:l="sap.ui.layout"
+	xmlns:f="sap.ui.layout.form"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns="sap.m">
+
+  	<Dialog id="dialog-add-game" title="{i18n>Create}">
+		<VBox id="VboxAddGame" class="sapUiSmallMargin">
+			<f:SimpleForm id="SFAddGame"
+				editable="true"
+				layout="ResponsiveGridLayout"
+				labelSpanXL="4"
+				labelSpanL="3"
+				labelSpanM="4"
+				labelSpanS="12"
+				adjustLabelSpan="false"
+				emptySpanXL="0"
+				emptySpanL="4"
+				emptySpanM="0"
+				emptySpanS="0"
+				columnsXL="2"
+				columnsL="1"
+				columnsM="1"
+				singleContainerFullSize="false"
+				ariaLabelledBy="Title1" >
+				<f:toolbar>
+					<Toolbar id="TB1">
+						<Title id="Title1" text="{i18n>newGame}"/>
+						<ToolbarSpacer id="TBSpacer1AddGame" />
+						<Button id="btnSettingsAddGame" icon="sap-icon://settings"/>
+						<Button id="btnListAddGame" icon="sap-icon://drop-down-list" />
+					</Toolbar>
+				</f:toolbar>
+				<f:content>
+					
+				</f:content>
+			</f:SimpleForm>
+		</VBox>
+
+		<footer>
+         <Toolbar id="TB3AddGame">
+            <content>
+               <ToolbarSpacer id="TBSpacerAddGame4" />
+               <Button id="btnCrearAddGame" press=".onSaveAddGame" text="{i18n>Create}" type="Success"
+                  class="sapUiTinyMarginTop sapUiTinyMarginBottom" />
+               <Button id="btnCloseAddGame" press=".onPressCloseDialogAddGame" text="{i18n>Close}" type="Reject"
+                  class="sapUiTinyMarginTop sapUiTinyMarginBottom" />
+            </content>
+			</Toolbar>
+      </footer>
+	</Dialog>
+
+</core:FragmentDefinition>

@@ -1,0 +1,118 @@
+<core:FragmentDefinition
+    xmlns:l="sap.ui.layout"
+	xmlns:f="sap.ui.layout.form"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns="sap.m">
+
+  	<Dialog id="dialog-add-team" title="{i18n>Create}">
+		<VBox id="VboxAddGame" class="sapUiSmallMargin">
+			<f:SimpleForm id="SFAddTeam"
+				editable="true"
+				layout="ResponsiveGridLayout"
+				labelSpanXL="4"
+				labelSpanL="3"
+				labelSpanM="4"
+				labelSpanS="12"
+				adjustLabelSpan="false"
+				emptySpanXL="0"
+				emptySpanL="4"
+				emptySpanM="0"
+				emptySpanS="0"
+				columnsXL="2"
+				columnsL="1"
+				columnsM="1"
+				singleContainerFullSize="false"
+				ariaLabelledBy="Title1" >
+				<f:toolbar>
+					<Toolbar id="TB1AddTeam">
+						<Title id="AddTeamTitleFragment" text="{i18n>newTeam}"/>
+						<ToolbarSpacer id="TBSpacer1AddTeam" />
+						<Button id="btnSettingsAddTeam" icon="sap-icon://settings"/>
+						<Button id="btnListAddTeam" icon="sap-icon://drop-down-list" />
+					</Toolbar>
+				</f:toolbar>
+				<f:content>
+					<Label id="lTipoAddTeam" text="{i18n>TeamType}" />
+					<Select id="LBTeamType" selectedKey="{Teams>/currentTeam/Type}" change="onTeamTypeSelection">
+						<items>
+							<core:Item id="sRecreativeAddTeam" text="{i18n>TeamTypeRecreative}" key="R"/>
+							<core:Item id="sCompetitiveAddTeam" text="{i18n>TeamTypeCompetitive}" key="C"/>
+						</items>
+					</Select>
+					<Label id="labelTeamName" text="{i18n>TeamName}" />
+					<Input id="fTeamName" value="{Teams>/currentTeam/name}" />
+
+                    <Toolbar id="TBPlayersAddTeam" ariaLabelledBy="Title2">
+						<Title id="TitleTBPlayersAddTeam" text="{i18n>titlePlayersTeam}"/>
+						<ToolbarSpacer id="TBSpacerPlayersAddTeam" />
+					</Toolbar>
+					
+                    <Table
+                        selectionChange="handleSelectionChange"
+                        inset="false"
+                        id="TblPlayersAddTeam">
+                        <headerToolbar>
+                            <OverflowToolbar id="_ToolBarMyTeamsAddTeamPlayers">
+                                <Title id="_ToolBarMyTeamsAddTeamTitle" text="{i18n>AddTeamPlayersTitle}" level="H4" />
+                                <ToolbarSpacer id="_ToolBarSpacerMyTeamsAddTeamPlayersTable" />
+                                    <ToolbarSeparator id="_TBSeparatorMyTeamsAddTeamPlayersList"/>
+                                    <Button id="_btnAddPlayer"
+                                        icon="sap-icon://add"
+                                        press="onAddTeamPlayer" />
+                                    <Button id="_btnChangePlayer"
+                                        icon="sap-icon://edit"
+                                        press="onChangeTeamPlayer" />
+                                    <Button id="_btnDeleteTeamPlayer"
+                                        icon="sap-icon://delete"
+                                        press="onDeleteTeamPlayer" />
+                            </OverflowToolbar>
+                        </headerToolbar>
+
+                        <columns>
+                            <Column id="_lstMyTeamsPlayersColumnNameTitle"
+                                width="12em">
+                                <Text id="_lstMyTeamsPlayersColumnNameText" text="{i18n>Name}" />
+                            </Column>
+                            <Column id="_lstMyTeamsPlayersColumnCommitteeTitle"
+                                hAlign="End">
+                                <Text id="_lstMyTeamsPlayersColumnCommitteeText" text="{i18n>Committee}" />
+                            </Column>
+                        </columns>
+                        <items>
+                            <ColumnListItem id="_tblMyTeamsPlayersListItems" vAlign="Middle">
+                                <cells>
+                                    <ObjectIdentifier id="_ObjIdMyTeamsPlayersListItems"
+                                        title="{Teams>name}"/>
+                                    <Switch id="_switchCommitteeMyTeamsPlayers" state="{Teams>committee}" customTextOn=" " customTextOff=" ">
+                                        <layoutData>
+                                            <FlexItemData id="_flexItemDataMyTeamsPlayersList" growFactor="1" />
+                                        </layoutData>
+			                        </Switch>
+                                </cells>
+                            </ColumnListItem>
+                        </items>
+                    </Table>
+
+                    <!-- <Toolbar id="TBCommitteeAddTeam" ariaLabelledBy="Title2">
+						<Title id="TitleTBCommitteeAddTeam" text="{i18n>titleCommitteeTeam}"/>
+						<ToolbarSpacer id="TBSpacerCommitteeAddTeam" />
+					</Toolbar> -->
+				</f:content>
+			</f:SimpleForm>
+		</VBox>
+
+		<footer>
+         <Toolbar id="TBEndAddTeam">
+            <content>
+               <ToolbarSpacer id="TBSpacerAddTeamEnd" />
+               <Button id="btnCreateAddTeam" press=".onSaveAddTeam" text="{i18n>Create}" type="Success"
+                  class="sapUiTinyMarginTop sapUiTinyMarginBottom" />
+               <Button id="btnCloseAddTeam" press=".onPressCloseDialogAddTeam" text="{i18n>Close}" type="Reject"
+                  class="sapUiTinyMarginTop sapUiTinyMarginBottom" />
+            </content>
+			</Toolbar>
+      </footer>
+	</Dialog>
+
+</core:FragmentDefinition>

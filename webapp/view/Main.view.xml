@@ -1,0 +1,329 @@
+<mvc:View controllerName="com.ordago.wahu.controller.Main"
+    xmlns:mvc="sap.ui.core.mvc" displayBlock="true"
+    xmlns="sap.m"
+	xmlns:core="sap.ui.core"
+    xmlns:tnt="sap.tnt">
+
+    <tnt:ToolPage id="toolPage">
+		<tnt:header>
+			<tnt:ToolHeader id="_IDGenToolHeader1">
+				<Button
+					visible="{= ${device>/system/phone}}"
+					id="sideNavigationToggleButton"
+					icon="sap-icon://menu2"
+					type="Transparent"
+					press=".onSideNavButtonPress">
+					<layoutData>
+						<OverflowToolbarLayoutData id="_IDGenOverflowToolbarLayoutData1" priority="NeverOverflow" />
+					</layoutData>
+				</Button>
+				<Image id="_IDGenImage1" height="1.5rem"
+					   class="sapUiSmallMarginBegin"
+					   src="./resources/images/icononly_transparent_nobuffer.png" />
+				<Title level="H1" text="WAHU" wrapping="false" id="productName">
+					<layoutData>
+						<OverflowToolbarLayoutData id="_IDGenOverflowToolbarLayoutData2" priority="Disappear"/>
+					</layoutData>
+				</Title>
+				<Text text="Second Тitle" wrapping="false" id="secondTitle">
+					<layoutData>
+						<OverflowToolbarLayoutData id="_IDGenOverflowToolbarLayoutData3" priority="Disappear"/>
+					</layoutData>
+				</Text>
+				<ToolbarSpacer id="_IDGenToolbarSpacer1" />
+				<SearchField width="16rem" id="searchField">
+					<layoutData>
+						<OverflowToolbarLayoutData id="_IDGenOverflowToolbarLayoutData4" priority="Low" group="1"/>
+					</layoutData>
+				</SearchField>
+				<ToolbarSpacer id="spacer">
+					<layoutData>
+						<OverflowToolbarLayoutData id="_IDGenOverflowToolbarLayoutData5" priority="Low" group="1"/>
+					</layoutData>
+				</ToolbarSpacer>
+				<Button visible="false" icon="sap-icon://search" type="Transparent" id="searchButton" tooltip="Search"/>
+<!-- 				<OverflowToolbarButton id="_IDGenOverflowToolbarButton1" icon="sap-icon://source-code" type="Transparent" tooltip="Action 1" text="Action 1">
+					<layoutData>
+						<OverflowToolbarLayoutData id="_IDGenOverflowToolbarLayoutData6" group="2"/>
+					</layoutData>
+				</OverflowToolbarButton> -->
+<!-- 				<OverflowToolbarButton id="_IDGenOverflowToolbarButton2" icon="sap-icon://card" type="Transparent" tooltip="Action 2" text="Action 2">
+					<layoutData>
+						<OverflowToolbarLayoutData id="_IDGenOverflowToolbarLayoutData7" group="2"/>
+					</layoutData>
+				</OverflowToolbarButton> -->
+				<ToolbarSeparator id="_IDGenToolbarSeparator1">
+					<layoutData>
+						<OverflowToolbarLayoutData id="_IDGenOverflowToolbarLayoutData8" group="2"/>
+					</layoutData>
+				</ToolbarSeparator>
+				<OverflowToolbarButton id="_IDGenOverflowToolbarButton3" icon="sap-icon://action-settings" type="Transparent" text="Settings"/>
+				<Button id="_IDGenButton1" icon="sap-icon://bell" type="Transparent" tooltip="Notification">
+					<layoutData>
+						<OverflowToolbarLayoutData id="_IDGenOverflowToolbarLayoutData9" priority="NeverOverflow"/>
+					</layoutData>
+				</Button>
+				<tnt:ToolHeaderUtilitySeparator id="_IDGenToolHeaderUtilitySeparator1"/>
+				<ToolbarSpacer id="_IDGenToolbarSpacer2" width="1.125rem"/>
+				<Avatar id="_IDGenAvatar1" src="{ path: 'User>/photoURL' }" displaySize="XS" press=".onAvatarPressed" tooltip="Profile">
+					<layoutData>
+						<OverflowToolbarLayoutData id="_IDGenOverflowToolbarLayoutData10" priority="NeverOverflow"/>
+					</layoutData>
+				</Avatar>
+			</tnt:ToolHeader>
+		</tnt:header>
+		<!-- <tnt:subHeader>
+			<tnt:ToolHeader id="_IDGenToolHeader2" visible="{=! ${device>/system/phone}}">
+				<IconTabHeader id="_IDGenIconTabHeader1"
+						selectedKey="{Lobby}"
+						items="{path: '/navigation'}"
+						select=".onItemSelect"
+						mode="Inline">
+					<layoutData>
+						<OverflowToolbarLayoutData id="_IDGenOverflowToolbarLayoutData11" priority="NeverOverflow" shrinkable="true" />
+					</layoutData>
+					<items>
+						<IconTabFilter id="_IDGenIconTabFilter1"
+								items="{items}"
+								icon="{icon}"
+								text="{title}"
+								key="{key}"
+								interactionMode="SelectLeavesOnly">
+							<items>
+								<IconTabFilter id="_IDGenIconTabFilter2"
+										text="{title}"
+										key="{key}"
+										enabled="{enabled}">
+								</IconTabFilter>
+							</items>
+						</IconTabFilter>
+					</items>
+				</IconTabHeader>
+			</tnt:ToolHeader>
+		</tnt:subHeader> -->
+		<tnt:sideContent>
+			<tnt:SideNavigation id="_IDGenSideNavigation1"
+				visible="{= ${!device>/system/phone}}"
+				expanded="true"
+				selectedKey="Lobby"
+				itemSelect=".onItemSelect">
+				<tnt:NavigationList id="_IDGenNavigationList1">
+					<tnt:NavigationListItem id="_IDGenNavigationListItem1"
+						text="{i18n>LobbyTitle}"
+						icon="sap-icon://home"
+						enabled="true"
+						expanded="true"
+				
+						key="Lobby">
+						<!-- items="{items}" -->
+						<!-- <tnt:NavigationListItem id="_IDGenNavigationListItem2"
+							text="{title}"
+							key="{key}"
+							enabled="{enabled}" /> -->
+					</tnt:NavigationListItem>
+					<tnt:NavigationListItem id="_IDGenNavigationListItem2"
+						text="{i18n>myGamesTitle}"
+						icon="sap-icon://soccer"
+						enabled="true"
+						expanded="true"
+						select="onMyGamesSelect"
+						key="myGames">
+					</tnt:NavigationListItem>
+					<tnt:NavigationListItem id="_SideNavMyTeams"
+						text="{i18n>myTeamsTitle}"
+						icon="sap-icon://company-view"
+						enabled="true"
+						expanded="true"
+						key="myTeams"
+						select="onMyTeamsSelect">
+					</tnt:NavigationListItem>
+					<!-- <tnt:NavigationListItem id="_IDGenNavigationListItem3"
+						text="{i18n>playersTitle}"
+						icon="sap-icon://customer"
+						enabled="true"
+						expanded="true"
+						key="players">
+					</tnt:NavigationListItem> -->
+				</tnt:NavigationList>
+				<tnt:fixedItem>
+					<tnt:NavigationList id="_IDGenNavigationListFooter">
+						<tnt:NavigationListItem id="_IDGenNavigationListItemFooter" 
+							text="{i18n>aboutWahu}" 
+							icon="{sap-icon://hint}" />
+					</tnt:NavigationList>
+				</tnt:fixedItem>
+			</tnt:SideNavigation>
+		</tnt:sideContent>
+
+		
+		<tnt:mainContents>
+			<NavContainer id="pageContainer" initialPage="Lobby">
+				<pages>
+					<ScrollContainer
+						id="myGames"
+						horizontal="false"
+						vertical="true"
+						height="100%"
+						class="sapUiContentPadding">
+						<List
+							id="myGamesList"
+							mode="SingleSelect"
+							headerText="{i18n>myGamesTitle}"
+							items="{path: 'Games>/games'}">
+							<headerToolbar>
+								<OverflowToolbar id="_IDGenOverflowToolbar1">
+									<Title id="_IDGenTitle1" text="{i18n>myGamesTitle}" level="H2" />
+									<ToolbarSpacer id="_IDGenToolbarSpacer3" />
+									<!-- <MultiComboBox id="filtroTipo"
+										placeholder="Tipo"
+										selectionFinish="onTipoFinish"
+										width="15%">
+										<items>
+											<core:Item id="_IDGenItem1"  text="{i18n>date}"
+												key="Departamento"/>
+											<core:Item id="_IDGenItem2"  text="{i18n>location}"
+												key="Local"/>
+										</items>
+									</MultiComboBox> -->
+										<Button id="_btnMyGamesListLock"
+											icon="sap-icon://unlocked"
+											tooltip="{i18n>btnToolTipUnlocked}"
+											press="onUnlockGame" />
+										<Button id="_btnMyGamesListReservation"
+											icon="sap-icon://select-appointments"
+											tooltip="{i18n>btnToolTipReserve}"
+											press="onReserveCourt" />
+										<ToolbarSeparator id="_TBSeparatorMyGamesList"/>
+										<Button id="_IDGenButton2"
+											icon="sap-icon://add"
+											press="onAddGame" />
+										<Button id="_IDGenButton3"
+											icon="sap-icon://edit"
+											press="onChangeGame" />
+										<Button id="_IDGenButton4"
+											icon="sap-icon://delete"
+											press="onDeleteGame" />
+								</OverflowToolbar>
+							</headerToolbar>
+			
+							<items>
+								<ObjectListItem id="_IDGenObjectListItemMyGames" 
+									title="{path:'Games>date', type:'sap.ui.model.type.Date', formatOptions : { style:'medium', UTC: true}}"
+									type="Active"
+									press="onListItemPress"
+									>
+									<markers>
+										<ObjectMarker id="_ObjectMarkerGamesLock"
+											type="Locked"
+											additionalInfo="{additionalInfo}"
+											visible="{Games>lock}"/>
+										<ObjectMarker id="_ObjectMarkerGamesReservation"
+											type="Flagged"
+											
+											additionalInfo="Hola"
+											visible="{Games>reservation}"/>
+									</markers>
+									<ObjectAttribute id="_OAMyGamesListAssistance"  text="Jugadores confirmados: 8/10" />
+
+									<firstStatus>
+										<ObjectStatus id="_fSMyGamesListReservation"
+											text="{= ${Games>reservation} ? 'Reserva hecha' : 'Reserva pendiente'}"
+											state="{= ${Games>reservation} ? 'Success' : 'Warning' }" />
+									</firstStatus>
+								</ObjectListItem>
+							</items>
+						</List>
+					</ScrollContainer>
+					<ScrollContainer
+						id="myTeams"
+						horizontal="false"
+						vertical="true"
+						height="100%"
+						class="sapUiContentPadding">
+						<List
+							id="myTeamsList"
+							mode="SingleSelect"
+							headerText="{i18n>myTeamsTitle}"
+							items="{path: 'Teams>/teams'}">
+							<headerToolbar>
+								<OverflowToolbar id="_ToolBarMyTeamsList">
+									<Title id="_ToolBarMyTeamsListTitle" text="{i18n>myTeamsTitle}" level="H2" />
+									<ToolbarSpacer id="_ToolBarSpacerMyTeamsList" />
+										<!-- <Button id="_btnMyGamesListLock"
+											icon="sap-icon://unlocked"
+											tooltip="{i18n>btnToolTipUnlocked}"
+											press="onUnlockGame" />
+										<Button id="_btnMyGamesListReservation"
+											icon="sap-icon://select-appointments"
+											tooltip="{i18n>btnToolTipReserve}"
+											press="onReserveCourt" /> -->
+										<ToolbarSeparator id="_TBSeparatorMyTeamsList"/>
+										<Button id="_btnAddTeam"
+											icon="sap-icon://add"
+											press="onAddTeam" />
+										<Button id="_btnChangeTeam"
+											icon="sap-icon://edit"
+											press="onChangeTeam" />
+										<Button id="_btnDeleteTeam"
+											icon="sap-icon://delete"
+											press="onDeleteTeam" />
+								</OverflowToolbar>
+							</headerToolbar>
+			
+							<items>
+								<ObjectListItem id="_OLIMyTeams" 
+									title="{Teams>name}"
+									type="Active"
+									press="onMyTeamsListPress"
+									>
+									<!-- <markers>
+										<ObjectMarker id="_ObjectMarker"
+											type="Locked"
+											additionalInfo="{additionalInfo}"
+											visible="{Games>lock}"/>
+										<ObjectMarker id="_ObjectMarkerGamesReservation"
+											type="Flagged"
+											
+											additionalInfo="Hola"
+											visible="{Games>reservation}"/>
+									</markers> -->
+									<ObjectAttribute id="_OAMyTeamsState"  text="Equipo Activo" />
+
+									<!-- <firstStatus>
+										<ObjectStatus id="_fSMyGamesListReservation"
+											text="{= ${Games>reservation} ? 'Reserva hecha' : 'Reserva pendiente'}"
+											state="{= ${Games>reservation} ? 'Success' : 'Warning' }" />
+									</firstStatus> -->
+								</ObjectListItem>
+							</items>
+						</List>
+					</ScrollContainer>
+					<ScrollContainer
+						id="Lobby"
+						horizontal="false"
+						vertical="true"
+						height="100%"
+						class="sapUiContentPadding">
+						<Text id="_IDGenText3" text="Lobby" />
+					</ScrollContainer>
+					<ScrollContainer
+						id="child1"
+						horizontal="false"
+						vertical="true"
+						height="100%"
+						class="sapUiContentPadding">
+						<Text id="_IDGenText4" text="Child 1" />
+					</ScrollContainer>
+					<ScrollContainer
+							id="child2"
+							horizontal="false"
+							vertical="true"
+							height="100%"
+							class="sapUiContentPadding">
+						<Text id="_IDGenText5" text="Child 2" />
+					</ScrollContainer>
+				</pages>
+			</NavContainer>
+		</tnt:mainContents>
+	</tnt:ToolPage>
+</mvc:View>

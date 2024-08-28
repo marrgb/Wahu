@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Wahu</title>
+
+    <script
+      id="sap-ui-bootstrap"
+      src="https://sapui5.hana.ondemand.com/resources/sap-ui-core.js"
+      data-sap-ui-theme="sap_horizon_dark"
+      data-sap-ui-libs="sap.m"
+      data-sap-ui-resourceroots='{
+          "com.ordago.wahu": "./"
+      }'
+      data-sap-ui-oninit="module:sap/ui/core/ComponentSupport"
+      data-sap-ui-compatVersion="edge"
+      data-sap-ui-async="true"
+      data-sap-ui-frameOptions="trusted"
+    ></script>
+
+
+    <!-- update the version number as needed -->
+    <script defer src="/__/firebase/10.12.1/firebase-app-compat.js"></script>
+    <!-- include only the Firebase features as you need -->
+    <script defer src="/__/firebase/10.12.1/firebase-auth-compat.js"></script>
+    <script defer src="/__/firebase/10.12.1/firebase-database-compat.js"></script>
+    <script defer src="/__/firebase/10.12.1/firebase-firestore-compat.js"></script>
+    <script defer src="/__/firebase/10.12.1/firebase-functions-compat.js"></script>
+    <script defer src="/__/firebase/10.12.1/firebase-messaging-compat.js"></script>
+    <script defer src="/__/firebase/10.12.1/firebase-storage-compat.js"></script>
+    <script defer src="/__/firebase/10.12.1/firebase-analytics-compat.js"></script>
+    <script defer src="/__/firebase/10.12.1/firebase-remote-config-compat.js"></script>
+    <script defer src="/__/firebase/10.12.1/firebase-performance-compat.js"></script>
+    <!-- 
+      initialize the SDK after all desired features are loaded, set useEmulator to false
+      to avoid connecting the SDK to running emulators.
+    -->
+    <!-- <script defer src="/__/firebase/init.js?useEmulator=false"></script> -->
+
+    <style>
+      html, body, body > div, #container, #container-uiarea {
+          height: 100%;
+      }
+    </style>
+  </head>
+  <body class="sapUiBody sapUiSizeCompact" id="content">
+    <div
+        data-sap-ui-component
+        data-name="com.ordago.wahu"
+        data-id="container"
+        data-settings='{"id" : "com.ordago.wahu"}'
+        data-handle-validation="true"
+    ></div>
+  </body>
+</html>

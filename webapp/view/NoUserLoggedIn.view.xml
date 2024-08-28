@@ -1,0 +1,28 @@
+<mvc:View
+  controllerName="com.ordago.wahu.controller.NoUserLoggedIn"
+  xmlns:mvc="sap.ui.core.mvc"
+  xmlns:f="sap.f"
+  xmlns="sap.m"
+  xmlns:layout= "sap.ui.layout"
+  height="100%">
+      <Page id="_IDGenPage1">
+        <f:ShellBar id="_IDGenShellBar1"
+          title="Lobby"
+          secondTitle="Not Logged in"
+          homeIcon="./resources/images/icononly_transparent_nobuffer.png"
+          showSearch="true"
+          showNotifications="true"
+          notificationsNumber="2"
+          avatarPressed="onAvatarPressed">
+          <f:menu>
+            <Menu id="_IDGenMenu1">
+              <MenuItem id="_IDGenMenuItem1" text="Flight booking" icon="sap-icon://flight" />
+              <MenuItem id="_IDGenMenuItem2" text="Car rental" icon="sap-icon://car-rental" />
+            </Menu>
+          </f:menu>
+          <f:profile>
+            <Avatar id="_IDGenAvatar1" initials="UI"/>
+          </f:profile>
+        </f:ShellBar>
+      </Page>
+</mvc:View>
