@@ -1,0 +1,36 @@
+<core:FragmentDefinition
+    xmlns:l="sap.ui.layout"
+	xmlns:f="sap.ui.layout.form"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns="sap.m">
+
+  	<Dialog id="dialog-confirm-game" title="{i18n>ConfirmAttendance}">
+        <!-- <List
+            id="attendanceList"
+            mode="None"
+            headerText="{i18n>ConfirmAttendanceTitle}"
+            items="{path: 'Games>/games/attendance',
+                sorter: { path: 'timestamp', descending: false} }">
+        </List> -->
+
+        <Label id="labelConfirmGameAttendance" text="{i18n>ConfirmAttendanceToGame}" class="sapUiSmallMargin" />
+        <Switch id="SwitchConfirmAttendanceGame" state="true" enabled="true" class="sapUiSmallMargin">
+            <layoutData>
+                <FlexItemData id="FIDConfirmAttendanceGame" growFactor="1" />
+            </layoutData>
+		</Switch>
+
+    	<footer>
+            <Toolbar id="TBEndGameAttendance">
+                <content>
+                    <ToolbarSpacer id="TBSpacerGameAttendance" />
+                    <Button id="btnConfirmGameAttendance" press=".onConfirmGameAttendance" text="{i18n>Confirm}" type="Success"
+                        class="sapUiTinyMarginTop sapUiTinyMarginBottom" />
+                    <Button id="btnCloseGameAttendance" press=".onPressCloseDialogConfirmAttendance" text="{i18n>Close}" type="Reject"
+                        class="sapUiTinyMarginTop sapUiTinyMarginBottom" />
+                </content>
+			</Toolbar>
+      </footer>
+    </Dialog>
+</core:FragmentDefinition>

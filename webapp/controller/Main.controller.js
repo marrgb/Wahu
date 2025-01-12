@@ -66,7 +66,6 @@ sap.ui.define([
                             var index = appData.games.map(function (document) {
                                 return document.id;
                             }).indexOf(oDocument.id);
-                            //var date = oDocument.date.toDate();
                             oDocument.date= oDocument.date.toDate();
                             appData.games[index] = oDocument;
                         }
@@ -90,9 +89,9 @@ sap.ui.define([
                 this.clearTeamsModel();
                 // The onSnapshot creates a listener to our collection in this case
                 this.collRefTeams.onSnapshot(function (snapshot) {
-                    // Get the shipment model
+                    // Get the Teams Model
                     var oModel = this.getView().getModel("Teams");
-                    // Get all the shipments
+                    // Get all the teams
                     var appData = oModel.getData();
 
                     // Get the current added/modified/removed document of the collection 
@@ -102,7 +101,7 @@ sap.ui.define([
                         var oDocument = change.doc.data();
                         oDocument.id = change.doc.id;
 
-                        // Added document (shipment) add to arrat
+                        // Added document (team) add to array
                         if (change.type === "added") {
                             appData.teams.push(oDocument);
                         }
@@ -113,7 +112,7 @@ sap.ui.define([
                             }).indexOf(oDocument.id);
                             appData.teams[index] = oDocument;
                         }
-                        // Removed document (find index and remove it from the shipments array in the model)
+                        // Removed document (find index and remove it from the teams array in the model)
                         else if (change.type === "removed") {
                             var index = appData.teams.map(function (document) {
                                 return document.id;
@@ -193,6 +192,17 @@ sap.ui.define([
                 this._AddTeam.then((oDialog) => oDialog.close());
             },
 
+            onCloseDialogAddGame: function (oEvent) {
+                if (this.getView().getModel("Games").getContext("/currentGame").getObject()) {
+                    this.clearAddedGame(oEvent);
+                }
+                this._AddGame.then((oDialog) => oDialog.close());
+            },
+
+            onCloseDialogConfirmAttendance: function (oEvent) {
+                this._ConfirmAttendance.then((oDialog) => oDialog.close());
+            },
+
             onPressCloseDialogAddGame: function (oEvt){
                 this.onCloseDialogAddGame()
             },
@@ -203,6 +213,10 @@ sap.ui.define([
 
             onPressCloseDialogAddPlayer: function (oEvt){
                 this.onCloseDialogAddPlayer()
+            },
+
+            onPressCloseDialogConfirmAttendance: function (oEvt){
+                this.onCloseDialogConfirmAttendance()
             },
 
             onChangeGame: function (oEvent) {
@@ -251,16 +265,19 @@ sap.ui.define([
                 var oGamesModel = oEvent.getSource().getModel("Games");
                 var oGame = oGamesModel.getContext("/currentGame").getObject();
 
+                // Set default values for new games
+                oGame.status="new";
+                oGame.date = new Date(oGame.date);
+
                 this.collRefGames.add(oGame).then(function (doc) {
                     oGame.id = doc.id;
-                    oGamesModel.refresh(true);
-                    this.getView().byId("myGames").getBinding("items").refresh();
                     this.clearAddedGame(oEvent);
-                    this.onCloseDialogAddGame();
                     this.showMessage("AddGameSuccess");
                 }.bind(this)).catch(function (error) {
                     console.error("Error adding document: ", error);
                 });
+
+                this.onCloseDialogAddGame();
             },
 
             onSaveAddTeam: function (oEvent) {
@@ -280,12 +297,13 @@ sap.ui.define([
             },
 
             onSaveAddPlayer: function (oEvent) {
-                var oModel = oEvent.getSource().getModel("Teams");
-                var oTeam = oTeamsModel.getContext("/currentTeam").getObject();
+                // Cambiar: esta rutina esta usando cosas de Teams pero deberían ser Jugadores
+                var oPlayersModel = oEvent.getSource().getModel("Players");
+                var oPlayer = oTeamsModel.getContext("/currentPlayer").getObject();
 
-                this.collRefTeam.add(oTeam).then(function (doc) {
-                    oTeam.id = doc.id;
-                    oTeamModel.refresh(true);
+                this.collRefPlayer.add(oTeam).then(function (doc) {
+                    oPlayer.id = doc.id;
+                    oPlayersModel.refresh(true);
                     this.getView().byId("myTeam").getBinding("items").refresh();
                     this.clearAddedTeam(oEvent);
                     this.onCloseDialogAddTeam();
@@ -293,6 +311,91 @@ sap.ui.define([
                 }.bind(this)).catch(function (error) {
                     console.error("Error adding document: ", error);
                 });
+            },
+
+            onConfirmGameAttendance: async function (oEvent) {
+                var selectedPath = this.getView().byId("myGamesList").getSelectedContextPaths(),
+                    gameId = this.getView().getModel("Games").getProperty(selectedPath + "/id"),
+                    me = this;
+                
+                const db = firebase.firestore(),
+                    gameDocRef = db.collection('games').doc(gameId),
+                    user = this.getOwnerComponent().getModel("User");
+
+                const queryAttendance = gameDocRef.collection("Attendance")
+                                            .where("player", "==", "Fulano")
+                                            .limit(1);
+
+                queryAttendance.get().then(doc => {
+                    if (doc.empty) {
+                        // Add the new attendance record to the subcollection
+                        const newRecord = {
+                            player: "Fulano",
+                            status: "2",
+                            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                        };
+
+                        db.collection("games")
+                            .doc(gameId)
+                            .collection("Attendance")
+                            .add(newRecord)
+                            .then((docRef) => {
+                            console.log(this.showMessage("ConfirmAttendanceSuccess"));
+                            this.onCloseDialogConfirmAttendance();
+                            })
+                            .catch((error) => {
+                            console.error(this.showMessage("ConfirmAttendanceError"));
+                        });
+
+                    } else {
+                        var attendanceData = doc.data();
+                        
+                        try {
+                            attendanceData.status = "1";
+                            attendanceData.timestamp = firebase.firestore.FieldValue.serverTimestamp();
+                            queryAttendance.collection("Attendance").doc(doc.id)
+                                .update(attendanceData).then((attendanceDocRef) => {
+                                    console.log(this.showMessage("ConfirmAttendanceSuccess"));
+                                    this.onCloseDialogConfirmAttendance();    
+                                })
+                                .catch((error) => {
+                                    console.error(this.showMessage("ConfirmAttendanceError"));
+                                });
+    
+                          }  catch (e) {
+                            console.error("Error while adding game confirmation" , e);
+                            this.showMessage("ConfirmAttendanceError");
+                        }
+
+                    }
+                })
+                .catch(error => {
+                    console.error("Error getting document:", error);
+                });
+
+                /* try {
+                    const newRecord = {
+                        player: "Fulano",
+                        status: "2",
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                    };
+
+                    // Add the new attendance record to the subcollection
+                    await db.collection("games")
+                      .doc(gameId)
+                      .collection("Attendance")
+                      .add(newRecord)
+                      .then((docRef) => {
+                        console.log(this.showMessage("ConfirmAttendanceSuccess"));
+                        this.onCloseDialogConfirmAttendance();
+                      })
+                      .catch((error) => {
+                        console.error(this.showMessage("ConfirmAttendanceError"));
+                    });
+                  }  catch (e) {
+                    console.error("Error while adding game confirmation" , e);
+                    this.showMessage("ConfirmAttendanceError");
+                } */
             },
 
             /* onTipoChangeAddGame: function() {
@@ -304,6 +407,24 @@ sap.ui.define([
                 var oPropiedad = oEvent.getSource().getModel("Propiedades").getContext("/currentProp").getObject();
 			    oPropiedad.Pais = oEvent.getSource().getSelectedItem().getKey();
             }, */
+
+            onPressFlagMyGames: function(oEvent) {
+                var selectedPath = this.getView().byId("myGamesList").getSelectedContextPaths(),
+                    gameId = this.getView().getModel("Games").getProperty(selectedPath + "/id");
+
+                this.showMessage("AttendanceConfirmed");
+            },
+            
+            onConfirmAttendance: function(oEvent) {
+                this._ConfirmAttendance ??= this.loadFragment({
+                    name: "com.ordago.wahu.view.fragments.confirmAttendance",
+                    controller: this
+                });
+
+                this._ConfirmAttendance.then((oDialog) => {
+                    oDialog.open(); 
+                }); 
+            },
 
             onUnlockGame: function(oEvent) {
                 var me = this;
@@ -362,7 +483,6 @@ sap.ui.define([
 
                 this._AddPlayer.then((oDialog) => {
                     oDialog.open(); 
-                    //this.collRefGames
                 }); 
             },
 
@@ -373,7 +493,9 @@ sap.ui.define([
                         date: "",
                         location: "",
                         status: "",
-                        reservation: "",
+                        reservation: false,
+                        lock: false,
+                        team: "",
                     }
                 };
 
@@ -406,24 +528,30 @@ sap.ui.define([
 
             clearAddedGame: function () {
                 this.getView().getModel("Games").getContext("/currentGame").getModel().getData().currentGame = {};
-                //this.getView().getModel("Games").getContext("/currentGame").getModel().setProperty("/selectedKey", "");
                 this.getView().getModel("Games").refresh(true);
             },
 
             clearAddedPlayer: function () {
                 this.getView().getModel("Teams").getContext("/currentPlayer").getModel().getData().currentGame = {};
-                //this.getView().getModel("Teams").getContext("/currentPlayer").getModel().setProperty("/selectedKey", "");
                 this.getView().getModel("Teams").refresh(true);
             },
 
             clearAddedTeam: function () {
                 this.getView().getModel("Teams").getContext("/currentTeam").getModel().getData().currentGame = {};
-                //this.getView().getModel("Teams").getContext("/currentTeam").getModel().setProperty("/selectedKey", "");
                 this.getView().getModel("Teams").refresh(true);
             },
 
             showMessage: function (text) {
                 MessageToast.show(this.getView().getModel("i18n").getResourceBundle().getText(text))
+            },
+
+            _setToggleButtonTooltip: function (bLarge) {
+                var oToggleButton = this.byId('sideNavigationToggleButton');
+                if (bLarge) {
+                    oToggleButton.setTooltip(this.getView().getModel("i18n").getResourceBundle().getText("menuExpandido"));
+                } else {
+                    oToggleButton.setTooltip(this.getView().getModel("i18n").getResourceBundle().getText("menuContraido"));
+                }
             },
 
             onAvatarPressed: function (event) {

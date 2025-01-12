@@ -8,7 +8,7 @@
 		<tnt:header>
 			<tnt:ToolHeader id="_IDGenToolHeader1">
 				<Button
-					visible="{= ${device>/system/phone}}"
+					
 					id="sideNavigationToggleButton"
 					icon="sap-icon://menu2"
 					type="Transparent"
@@ -17,6 +17,7 @@
 						<OverflowToolbarLayoutData id="_IDGenOverflowToolbarLayoutData1" priority="NeverOverflow" />
 					</layoutData>
 				</Button>
+				<!-- visible="{= ${device>/system/phone}}" -->
 				<Image id="_IDGenImage1" height="1.5rem"
 					   class="sapUiSmallMarginBegin"
 					   src="./resources/images/icononly_transparent_nobuffer.png" />
@@ -169,7 +170,8 @@
 							id="myGamesList"
 							mode="SingleSelect"
 							headerText="{i18n>myGamesTitle}"
-							items="{path: 'Games>/games'}">
+							items="{path: 'Games>/games',
+								sorter: { path: 'date', descending: false} }">
 							<headerToolbar>
 								<OverflowToolbar id="_IDGenOverflowToolbar1">
 									<Title id="_IDGenTitle1" text="{i18n>myGamesTitle}" level="H2" />
@@ -194,6 +196,11 @@
 											tooltip="{i18n>btnToolTipReserve}"
 											press="onReserveCourt" />
 										<ToolbarSeparator id="_TBSeparatorMyGamesList"/>
+										<Button id="_btnMyGamesListConfirmAttendance"
+											icon="sap-icon://employee-approvals"
+											tooltip="{i18n>btnToolTipConfirmAttendance}"
+											press="onConfirmAttendance" />
+										<ToolbarSeparator id="_TBSeparatorMyGamesList2"/>
 										<Button id="_IDGenButton2"
 											icon="sap-icon://add"
 											press="onAddGame" />
@@ -211,6 +218,7 @@
 									title="{path:'Games>date', type:'sap.ui.model.type.Date', formatOptions : { style:'medium', UTC: true}}"
 									type="Active"
 									press="onListItemPress"
+
 									>
 									<markers>
 										<ObjectMarker id="_ObjectMarkerGamesLock"
@@ -219,11 +227,11 @@
 											visible="{Games>lock}"/>
 										<ObjectMarker id="_ObjectMarkerGamesReservation"
 											type="Flagged"
-											
+											press="onPressFlagMyGames"
 											additionalInfo="Hola"
 											visible="{Games>reservation}"/>
 									</markers>
-									<ObjectAttribute id="_OAMyGamesListAssistance"  text="Jugadores confirmados: 8/10" />
+									<ObjectAttribute id="_OAMyGamesListAttendance"  text="Jugadores confirmados: 8/10" />
 
 									<firstStatus>
 										<ObjectStatus id="_fSMyGamesListReservation"

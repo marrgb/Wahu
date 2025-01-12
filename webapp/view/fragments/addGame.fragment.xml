@@ -24,15 +24,33 @@
 				columnsM="1"
 				singleContainerFullSize="false"
 				ariaLabelledBy="Title1" >
-				<f:toolbar>
+				<!-- <f:toolbar>
 					<Toolbar id="TB1">
 						<Title id="Title1" text="{i18n>newGame}"/>
 						<ToolbarSpacer id="TBSpacer1AddGame" />
 						<Button id="btnSettingsAddGame" icon="sap-icon://settings"/>
 						<Button id="btnListAddGame" icon="sap-icon://drop-down-list" />
 					</Toolbar>
-				</f:toolbar>
+				</f:toolbar> -->
 				<f:content>
+					<Label id="lDateAddGame" text="{i18n>labelDate}" />
+					<DateTimePicker
+						id="DPDateGame"
+						change="handleChange"
+						value="{Games>/currentGame/date}"
+						class="sapUiSmallMarginBottom"/>	
+
+					<Label id="lLocationAddGame" text="{i18n>labelLocation}" />
+					<Input id="fLocationAddGame" value="{Games>/currentGame/location}"/>
+
+					<Label id="lTeamAddGame" text="{i18n>labelTeam}" />
+					<Input id="fTeamAddGame" value="{Games>/currentGame/team}"/>
+
+					<Label id="lReservationAddGame" text="{i18n>labelReservation}" />
+					<CheckBox id="CBReservationAddGame" selected="{Games>/currentGame/reservation}" />
+
+					<Label id="lLockedAddGame" text="{i18n>labelLocked}" />
+					<CheckBox id="CBLockedAddGame" enabled="false" selected="true" />
 					
 				</f:content>
 			</f:SimpleForm>
