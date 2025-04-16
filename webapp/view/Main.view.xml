@@ -1,6 +1,8 @@
 <mvc:View controllerName="com.ordago.wahu.controller.Main"
     xmlns:mvc="sap.ui.core.mvc" displayBlock="true"
     xmlns="sap.m"
+	xmlns:l="sap.ui.layout"
+	xmlns:f="sap.ui.layout.form"
 	xmlns:core="sap.ui.core"
     xmlns:tnt="sap.tnt">
 
@@ -150,7 +152,11 @@
 					<tnt:NavigationList id="_IDGenNavigationListFooter">
 						<tnt:NavigationListItem id="_IDGenNavigationListItemFooter" 
 							text="{i18n>aboutWahu}" 
-							icon="{sap-icon://hint}" />
+							icon="{sap-icon://hint}" 
+							enabled="true"
+							expanded="true"
+							key="aboutWahu"
+							select="onAboutWahuSelect"/>
 					</tnt:NavigationList>
 				</tnt:fixedItem>
 			</tnt:SideNavigation>
@@ -228,10 +234,10 @@
 										<ObjectMarker id="_ObjectMarkerGamesReservation"
 											type="Flagged"
 											press="onPressFlagMyGames"
-											additionalInfo="Hola"
+											additionalInfo="{i18n>flagOpen}"
 											visible="{Games>reservation}"/>
 									</markers>
-									<ObjectAttribute id="_OAMyGamesListAttendance"  text="Jugadores confirmados: 8/10" />
+									<ObjectAttribute id="_OAMyGamesListAttendance"  text="Jugadores confirmados: {Games>minAttendance}/{Games>attendanceCount}" />
 
 									<firstStatus>
 										<ObjectStatus id="_fSMyGamesListReservation"
@@ -284,24 +290,7 @@
 									type="Active"
 									press="onMyTeamsListPress"
 									>
-									<!-- <markers>
-										<ObjectMarker id="_ObjectMarker"
-											type="Locked"
-											additionalInfo="{additionalInfo}"
-											visible="{Games>lock}"/>
-										<ObjectMarker id="_ObjectMarkerGamesReservation"
-											type="Flagged"
-											
-											additionalInfo="Hola"
-											visible="{Games>reservation}"/>
-									</markers> -->
 									<ObjectAttribute id="_OAMyTeamsState"  text="Equipo Activo" />
-
-									<!-- <firstStatus>
-										<ObjectStatus id="_fSMyGamesListReservation"
-											text="{= ${Games>reservation} ? 'Reserva hecha' : 'Reserva pendiente'}"
-											state="{= ${Games>reservation} ? 'Success' : 'Warning' }" />
-									</firstStatus> -->
 								</ObjectListItem>
 							</items>
 						</List>
@@ -329,6 +318,48 @@
 							height="100%"
 							class="sapUiContentPadding">
 						<Text id="_IDGenText5" text="Child 2" />
+					</ScrollContainer>
+					<ScrollContainer
+						id="aboutWahu"
+						horizontal="false"
+						vertical="true"
+						height="100%"
+						class="sapUiContentPadding">
+						<!-- <Text id="_IDGenText6" text="{i18n>aboutWahu}" /> -->
+						<f:SimpleForm id="_IDGenSimpleFormAboutWahu"
+							layout="ResponsiveGridLayout"
+							editable="true"
+							adjustLabelSpan="false"
+							labelSpanXL="2"
+							labelSpanL="2"
+							labelSpanM="3"
+							labelSpanS="5">
+
+						
+						<l:BlockLayout id="BlockLayoutAboutWahu" background="Light">
+							<l:BlockLayoutRow id="BlockLayoutRowAboutWahuTitle">
+								<l:BlockLayoutCell id="BlockLayoutCellAboutWahuTitle">
+									<Title id="AboutWahuSectionTitle"
+										titleStyle="H5"
+										text="“No preguntes qué pueden hacer por ti tus compañeros. Pregunta qué puedes hacer tú por ellos”"
+										class="sapUiSmallMargin" />
+								</l:BlockLayoutCell>
+							</l:BlockLayoutRow>
+
+							<l:BlockLayoutRow id="BlockLayoutRowAboutWahuImage">
+								<l:BlockLayoutCell id="IDBlockLayoutCellAboutWahuImage">
+									<Text
+										id="text2"
+										wrappingType="Hyphenated"
+										text="La realidad es solo aquel que se dedica activamente en la organización del futbol amateur, sabe lo dificil que es.  Una lucha constante y cotidiana, que incluso en muchos casos es ingrata.  Solo perduran en esta tarea las personas con auténtica vocación, que a pesar de todo, tienen la fuerza de voluntad de hierro para seguir y lograr que los partidos entre amigos no sea una cosa esporádica, sino mas bien una actividad que sea regular y que una cada vez mas al grupo.  Es por eso que nosotros, desde este lado, homenajeamos al padre de la organización del futbol argentino: Alexander Watson Hutton" />
+								</l:BlockLayoutCell>
+								<l:BlockLayoutCell id="IDBlockLayourCellAboutWahuText">
+									<Image id="IDImageAboutWahu" src="./resources/images/Alejandro_Watson_Hutton.jpg"
+										mode="Image" width="10em"/>
+								</l:BlockLayoutCell>
+							</l:BlockLayoutRow>
+						</l:BlockLayout>
+						</f:SimpleForm>
 					</ScrollContainer>
 				</pages>
 			</NavContainer>

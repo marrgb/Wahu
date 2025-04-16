@@ -28,62 +28,80 @@ sap.ui.define([
                 // const collRefNavs = firestore.collection("Navigation"),
                 this.collRefGames = firestore.collection("games");
                 this.collRefTeams = firestore.collection("teams");
-
-                fireAuth.onAuthStateChanged(function (user) {
-                    if (user) {
-                        // Get realtime Data
-                        //this.getRealTimeData();
-                    }
-                }.bind(this));
             },
 
             onMyGamesSelect: function () {
-                //Init Games model
                 this.clearGamesModel();
-
-                // The onSnapshot creates a listener to our collection in this case
+            
                 this.collRefGames.onSnapshot(function (snapshot) {
-                    // Get the shipment model
                     var oModel = this.getView().getModel("Games");
-                    // Get all the shipments
                     var appData = oModel.getData();
-    
-                    // Get the current added/modified/removed document (shipment) of the collection (shipments)
-                    snapshot.docChanges().forEach(function (change) {
-                        // set id (to know which document is modifed and replace it on change.Type == modified) 
-                        // and data of firebase document
+            
+                    // Use Promise.all to handle multiple asynchronous operations
+                    const promises = snapshot.docChanges().map(async (change) => {
                         var oDocument = change.doc.data();
                         oDocument.id = change.doc.id;
-    
-                        // Added document (shipment) add to arrat
+                        oDocument.date = oDocument.date ? oDocument.date.toDate() : null; // Handle potential missing date
+   
+                        // *** COUNT ATTENDANCE DOCUMENTS ***
+                        const attendanceRef = change.doc.ref.collection("Attendance"); // Get the subcollection reference
+                        /* const attendanceSnapshot = await attendanceRef.get().then( // Get documents
+                            console.log(attendanceSnapshot),
+                            oDocument.attendanceCount = attendanceSnapshot.size // Get the count
+                        ); */
+                        try {
+                            const attendanceSnapshot = await attendanceRef.get();
+                            oDocument.attendanceCount = attendanceSnapshot.size;
+                        } catch (error) { 
+                            console.error("Error counting attendance:", error);
+                            oDocument.attendanceCount = 0; // Handle errors gracefully
+                        }
+
                         if (change.type === "added") {
-                            var date = oDocument.date.toDate();
-                            oDocument.date= date;
                             appData.games.push(oDocument);
+            
+                            const teamRefId = oDocument.team; // Access teamRefId from the document data
+            
+                            if (teamRefId) {
+                                try {
+                                    const teamDoc = await teamRefId.get(); // Use await inside the async function
+                                    if (teamDoc.exists) {
+                                        const teamData = teamDoc.data();
+                                        oDocument.minAttendance = teamData.MinAttendance; // Add minAttendance to the game document
+                                        console.log("Team Data:", teamData); // Log the team data
+                                    } else {
+                                        console.warn("No such team!");
+                                        oDocument.minAttendance = 0; // Or some default value if the team doesn't exist.
+                                    }
+                                } catch (error) {
+                                    console.error("Error getting team data:", error);
+                                    oDocument.minAttendance = 0; // Handle errors gracefully
+                                }
+                            } else {
+                                oDocument.minAttendance = 0; // Default if teamRefId is null or undefined
+                            }
+                        } else if (change.type === "modified") {
+                            var index = appData.games.findIndex(game => game.id === oDocument.id);
+                            if (index > -1) {  //check if index exists
+                                appData.games[index] = oDocument;
+                            }
+                        } else if (change.type === "removed") {
+                            var index = appData.games.findIndex(game => game.id === oDocument.id);
+                            if (index > -1) { //check if index exists
+                                appData.games.splice(index, 1);
+                            }
                         }
-                        // Modified document (find its index and change current doc with the updated version)
-                        else if (change.type === "modified") {
-                            var index = appData.games.map(function (document) {
-                                return document.id;
-                            }).indexOf(oDocument.id);
-                            oDocument.date= oDocument.date.toDate();
-                            appData.games[index] = oDocument;
-                        }
-                        // Removed document (find index and remove it from the shipments array in the model)
-                        else if (change.type === "removed") {
-                            var index = appData.games.map(function (document) {
-                                return document.id;
-                            }).indexOf(oDocument.id);
-                            appData.games.splice(index, 1);
-                        }
+                        return oDocument; // Return the modified document for Promise.all
                     });
-    
-                    //Refresh your model and the binding of the items in the table
-                    this.getView().getModel("Games").refresh(true);
-                    this.getView().byId("myGamesList").getBinding("items").refresh();
+            
+                    Promise.all(promises).then(() => {
+                        this.getView().getModel("Games").refresh(true);
+                        this.getView().byId("myGamesList").getBinding("items").refresh();
+                    });
+            
                 }.bind(this));
             },
-
+            
             onMyTeamsSelect: function () {
                 //Init Teams Model
                 this.clearTeamsModel();
@@ -313,25 +331,26 @@ sap.ui.define([
                 });
             },
 
-            onConfirmGameAttendance: async function (oEvent) {
+            onSaveGameAttendance: async function (oEvent) {
                 var selectedPath = this.getView().byId("myGamesList").getSelectedContextPaths(),
                     gameId = this.getView().getModel("Games").getProperty(selectedPath + "/id"),
                     me = this;
                 
                 const db = firebase.firestore(),
                     gameDocRef = db.collection('games').doc(gameId),
-                    user = this.getOwnerComponent().getModel("User");
+                    uid = this.getOwnerComponent().getModel("User").getData().uid,
+                    decision = this.getView().byId("SBAttendanceDecision").getSelectedKey();
 
                 const queryAttendance = gameDocRef.collection("Attendance")
-                                            .where("player", "==", "Fulano")
+                                            .where("player", "==", uid)
                                             .limit(1);
 
                 queryAttendance.get().then(doc => {
-                    if (doc.empty) {
+                    if (!doc.empty) {
                         // Add the new attendance record to the subcollection
                         const newRecord = {
-                            player: "Fulano",
-                            status: "2",
+                            player: uid,
+                            status: decision,
                             timestamp: firebase.firestore.FieldValue.serverTimestamp()
                         };
 
@@ -340,18 +359,18 @@ sap.ui.define([
                             .collection("Attendance")
                             .add(newRecord)
                             .then((docRef) => {
-                            console.log(this.showMessage("ConfirmAttendanceSuccess"));
-                            this.onCloseDialogConfirmAttendance();
+                                console.log(this.showMessage("ConfirmAttendanceSuccess"));
+                                this.onCloseDialogConfirmAttendance();
                             })
                             .catch((error) => {
-                            console.error(this.showMessage("ConfirmAttendanceError"));
+                                console.error(this.showMessage("ConfirmAttendanceError"));
                         });
 
                     } else {
                         var attendanceData = doc.data();
                         
                         try {
-                            attendanceData.status = "1";
+                            attendanceData.status = decision;
                             attendanceData.timestamp = firebase.firestore.FieldValue.serverTimestamp();
                             queryAttendance.collection("Attendance").doc(doc.id)
                                 .update(attendanceData).then((attendanceDocRef) => {
@@ -373,29 +392,6 @@ sap.ui.define([
                     console.error("Error getting document:", error);
                 });
 
-                /* try {
-                    const newRecord = {
-                        player: "Fulano",
-                        status: "2",
-                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                    };
-
-                    // Add the new attendance record to the subcollection
-                    await db.collection("games")
-                      .doc(gameId)
-                      .collection("Attendance")
-                      .add(newRecord)
-                      .then((docRef) => {
-                        console.log(this.showMessage("ConfirmAttendanceSuccess"));
-                        this.onCloseDialogConfirmAttendance();
-                      })
-                      .catch((error) => {
-                        console.error(this.showMessage("ConfirmAttendanceError"));
-                    });
-                  }  catch (e) {
-                    console.error("Error while adding game confirmation" , e);
-                    this.showMessage("ConfirmAttendanceError");
-                } */
             },
 
             /* onTipoChangeAddGame: function() {
@@ -416,6 +412,7 @@ sap.ui.define([
             },
             
             onConfirmAttendance: function(oEvent) {
+                // Load Fragment to display data
                 this._ConfirmAttendance ??= this.loadFragment({
                     name: "com.ordago.wahu.view.fragments.confirmAttendance",
                     controller: this
@@ -424,6 +421,60 @@ sap.ui.define([
                 this._ConfirmAttendance.then((oDialog) => {
                     oDialog.open(); 
                 }); 
+
+                var selectedPath = this.getView().byId("myGamesList").getSelectedContextPaths(),
+                    gameId = this.getView().getModel("Games").getProperty(selectedPath + "/id");
+            
+                const db = firebase.firestore(),
+                    gameDocRef = db.collection('games').doc(gameId);
+
+                //Init Attendance Model
+                this.clearAttendanceModel();
+
+                //fetch game attendance data
+                const collRefAttendance = gameDocRef.collection("Attendance");
+
+                collRefAttendance.onSnapshot(function (snapshot) {
+                    // Get the Attendance Model
+                    var oModel = this.getView().getModel("Attendance");
+                    // Get all the teams
+                    var appData = oModel.getData();
+
+                    // Get the current added/modified/removed document of the collection 
+                    snapshot.docChanges().forEach(function (change) {
+                        // set id (to know which document is modifed and replace it on change.Type == modified) 
+                        // and data of firebase document
+                        var oDocument = change.doc.data();
+                        oDocument.id = change.doc.id;
+
+                        // Added document add to array
+                        if (change.type === "added") {
+                            var date = oDocument.timestamp.toDate();
+                            oDocument.timestamp= date;
+                            appData.attendance.push(oDocument);
+                        }
+                        // Modified document (find its index and change current doc with the updated version)
+                        else if (change.type === "modified") {
+                            var index = appData.attendance.map(function (document) {
+                                return document.id;
+                            }).indexOf(oDocument.id);
+                            oDocument.timestamp= oDocument.timestamp.toDate();
+                            appData.attendance[index] = oDocument;
+                        }
+                        // Removed document (find index and remove it from the teams array in the model)
+                        else if (change.type === "removed") {
+                            var index = appData.attendance.map(function (document) {
+                                return document.id;
+                            }).indexOf(oDocument.id);
+                            appData.attendance.splice(index, 1);
+                        }
+                    });
+
+                    //Refresh your model and the binding of the items in the table
+                    this.getView().getModel("Attendance").refresh(true);
+                    this.getView().byId("gameAttendanceList").getBinding("items").refresh();
+                }.bind(this));
+
             },
 
             onUnlockGame: function(oEvent) {
@@ -496,6 +547,8 @@ sap.ui.define([
                         reservation: false,
                         lock: false,
                         team: "",
+                        MinAttendance: 0,
+                        currAttendance: 0,
                     }
                 };
 
@@ -524,6 +577,21 @@ sap.ui.define([
 
                 var teamsModel = new JSONModel(oTeams);
                 this.getView().setModel(teamsModel, "Teams");
+            },
+
+            clearAttendanceModel: function () {
+                var oAttendance = {
+                    attendance: [],
+                    currentAttendance: {
+                        refPos: 0,
+                        player: "",
+                        timestamp: "",
+                        status: "",
+                    }
+                };
+
+                var attendanceModel = new JSONModel(oAttendance);
+                this.getView().setModel(attendanceModel, "Attendance");
             },
 
             clearAddedGame: function () {

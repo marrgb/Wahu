@@ -21,7 +21,7 @@
             </Menu>
           </f:menu>
           <f:profile>
-            <Avatar id="_IDGenAvatar1" initials="UI"/>
+            <Avatar id="_IDGenUIAvatar" initials="UI"/>
           </f:profile>
         </f:ShellBar>
       </Page>
