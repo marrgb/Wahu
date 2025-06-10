@@ -3,26 +3,98 @@
   xmlns:mvc="sap.ui.core.mvc"
   xmlns:f="sap.f"
   xmlns="sap.m"
+  xmlns:l="sap.ui.layout"
   xmlns:layout= "sap.ui.layout"
   height="100%">
-      <Page id="_IDGenPage1">
+      <Page id="_IDGenPage1" showHeader="false">
         <f:ShellBar id="_IDGenShellBar1"
-          title="Lobby"
-          secondTitle="Not Logged in"
+          title="{i18n>noUser}"
           homeIcon="./resources/images/icononly_transparent_nobuffer.png"
-          showSearch="true"
-          showNotifications="true"
-          notificationsNumber="2"
+          showSearch="false"
+          showNotifications="false"
           avatarPressed="onAvatarPressed">
-          <f:menu>
+          <!-- <f:menu>
             <Menu id="_IDGenMenu1">
               <MenuItem id="_IDGenMenuItem1" text="Flight booking" icon="sap-icon://flight" />
               <MenuItem id="_IDGenMenuItem2" text="Car rental" icon="sap-icon://car-rental" />
             </Menu>
-          </f:menu>
+          </f:menu> -->
+          <!--   -->
+          
+
           <f:profile>
-            <Avatar id="_IDGenUIAvatar" initials="UI"/>
+            <Avatar id="_IDGenAvatarNoUser" initials="UI" displaySize="XS" press=".onAvatarPressed" tooltip="Profile"/>
           </f:profile>
         </f:ShellBar>
+
+          <l:BlockLayout id="BlockLayoutNoUser" background="Default">
+							<!-- <l:BlockLayoutRow id="BlockLayoutRowNoUserTitle">
+								<l:BlockLayoutCell id="BlockLayoutCellNoUserTitle">
+									<Title id="NoUserSectionTitle"
+										titleStyle="H5"
+										text="{i18n>noUserTitle}"
+										class="sapUiSmallMargin" />
+                  <Text
+										id="noUserSubtitle"
+										wrappingType="Hyphenated"
+                    textAlign="Begin"
+										text="{i18n>noUserSubtitle}"
+										class="sapUiSmallMargin"/>
+								</l:BlockLayoutCell>
+							</l:BlockLayoutRow> -->
+
+							<l:BlockLayoutRow id="BlockLayoutRowNoUserImage">
+								<l:BlockLayoutCell id="IDBlockLayourCellNoUserImage"
+                    width="1">
+                  <Title id="NoUserSectionTitle"
+										titleStyle="H5"
+										text="{i18n>noUserTitle}"
+										class="sapUiSmallMargin" />
+									<Image id="IDImageNoUser" src="./resources/images/kickoff ball.png"
+										mode="Image" width="20em"/>
+								</l:BlockLayoutCell>
+                <l:BlockLayoutCell id="IDBlockLayoutCellNoUserText1"
+                    width="2">
+									<Title
+										id="NoUserText1"
+										wrappingType="Hyphenated"
+										text="{i18n>noUserSubtitle}" />
+                  <FlexBox id="noUserFlexBox" direction="Column" alignItems="Start">
+                    <!-- <Text
+                      id="NoUserText2"
+                      wrappingType="Hyphenated"
+                      text="{i18n>noUserSignIn}"/> -->
+                    <Button id="_NoUserBtnSignIn" text="{i18n>noUserSignIn}" icon="sap-icon://visits" type="Emphasized" tooltip="Notification"
+                        press=".onSignInPressed">
+                      <layoutData>
+                        <OverflowToolbarLayoutData id="_NoUserOvf2" priority="NeverOverflow"/>
+                      </layoutData>
+                    </Button>
+
+                    <!-- <Text
+                      id="NoUserText3"
+                      wrappingType="Hyphenated"
+                      text="{i18n>noUser}"/>
+                    <Button id="_NoUserBtnSignUp" text="{i18n>noUserSignUp}" icon="sap-icon://bell" type="Default" tooltip="Notification"
+                        press=".onSignUpPressed">
+                      <layoutData>
+                        <OverflowToolbarLayoutData id="_NoUserOvf1" priority="NeverOverflow"/>
+                      </layoutData>
+                    </Button> -->
+                  </FlexBox>
+								</l:BlockLayoutCell>
+
+                <l:BlockLayoutCell id="IDBlockLayoutCellNoUserText2"
+                    width="1">
+                  <Text
+                      id="NoUserInvitationHelp"
+                      wrappingType="Hyphenated"
+                      text="{i18n>noUserInvitationHelp}"/>
+								</l:BlockLayoutCell>
+							</l:BlockLayoutRow>
+						</l:BlockLayout>
+
+        
+          
       </Page>
 </mvc:View>

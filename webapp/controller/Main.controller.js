@@ -30,76 +30,138 @@ sap.ui.define([
                 this.collRefTeams = firestore.collection("teams");
             },
 
-            onMyGamesSelect: function () {
+            _getPlayerID: async function (uuid) {
+                const playersRef = firebase.firestore().collection("players");
+                const playersQuerySnapshot = await playersRef.where("UUID", "==", uuid).get();
+
+                if (playersQuerySnapshot.empty) {
+                    console.log("No matching player.");
+                    return []; // Return an empty array if no matches are found
+                } else {
+
+                    if (playersQuerySnapshot.size !== 1) {
+                        console.log("More than one player found.");
+                        return [];
+                    };
+
+                    // const player = [];
+                    playersQuerySnapshot.forEach((doc) => {
+                        /* const playerData = doc.data();
+                        playerData.id = doc.id; // Add the document ID to the data
+                        player.push(doc.id); */
+                        return doc.id; // Add the document ID to the data
+                    });
+                    //return player;
+                }
+
+            },
+
+            _getTeamsFromPlayer: async function (playerId) {
+                const teamsRef = firebase.firestore().collection("teams");
+                const teamsQuerySnapshot = await teamsRef.where("players", "array-contains", playerId).get();
+
+                if (teamsQuerySnapshot.empty) {
+                    console.log("No matching documents.");
+                    return []; // Return an empty array if no matches are found
+                }
+
+                const teams = [];
+                teamsQuerySnapshot.forEach((doc) => {
+                    const teamData = doc.data();
+                    teamData.id = doc.id; // Add the document ID to the data
+                    teams.push(teamData);  //teamData.id
+                });
+                
+                return teams;
+            },
+
+            _getGamesFromTeam: async function (teamId) {
+                const gamesRef = firebase.firestore().collection("games");
+                const gamesQuerySnapshot = await gamesRef.where("team", "==", teamId).get();
+                if (gamesQuerySnapshot.empty) {
+                    console.log("No matching games.");
+                    return []; // Return an empty array if no matches are found
+                }
+                const games = [];
+                gamesQuerySnapshot.forEach((doc) => {
+                    const gameData = doc.data();
+                    gameData.id = doc.id; // Add the document ID to the data
+                    games.push(gameData);
+                });
+                return games;
+            },
+
+            _getGameAttendance: async function (gameId) {
+                const attendanceRef = firebase.firestore().collection("games").doc(gameId).collection("Attendance");
+                const attendanceQuerySnapshot = await attendanceRef.get();
+                if (attendanceQuerySnapshot.empty) {
+                    console.log("No matching attendance.");
+                    return []; // Return an empty array if no matches are found
+                }
+                const attendance = [];
+                attendanceQuerySnapshot.forEach((doc) => {
+                    const attendanceData = doc.data();
+                    attendanceData.id = doc.id; // Add the document ID to the data
+                    attendance.push(attendanceData);
+                });
+                return attendance;
+            },
+
+            onMyGamesSelectNew: async function () {
                 this.clearGamesModel();
             
-                this.collRefGames.onSnapshot(function (snapshot) {
-                    var oModel = this.getView().getModel("Games");
-                    var appData = oModel.getData();
+                const userId = this.getOwnerComponent().getModel("User").getData().uid;
+                const teams = await this._getTeamsFromPlayer(userId);
+                const oModel = this.getView().getModel("Games");
+                const gamesModelData = [];
             
-                    // Use Promise.all to handle multiple asynchronous operations
-                    const promises = snapshot.docChanges().map(async (change) => {
-                        var oDocument = change.doc.data();
-                        oDocument.id = change.doc.id;
-                        oDocument.date = oDocument.date ? oDocument.date.toDate() : null; // Handle potential missing date
-   
-                        // *** COUNT ATTENDANCE DOCUMENTS ***
-                        const attendanceRef = change.doc.ref.collection("Attendance"); // Get the subcollection reference
-                        /* const attendanceSnapshot = await attendanceRef.get().then( // Get documents
-                            console.log(attendanceSnapshot),
-                            oDocument.attendanceCount = attendanceSnapshot.size // Get the count
-                        ); */
-                        try {
-                            const attendanceSnapshot = await attendanceRef.get();
-                            oDocument.attendanceCount = attendanceSnapshot.size;
-                        } catch (error) { 
-                            console.error("Error counting attendance:", error);
-                            oDocument.attendanceCount = 0; // Handle errors gracefully
-                        }
-
-                        if (change.type === "added") {
-                            appData.games.push(oDocument);
+                const allPromises = [];
             
-                            const teamRefId = oDocument.team; // Access teamRefId from the document data
+                teams.forEach((team) => {
+                    const teamGamesPromise = new Promise((resolve) => {
+                        this.collRefGames.where("team", "==", team.id).onSnapshot(async (snapshot) => {
+                            const gamePromises = snapshot.docChanges().map(async (change) => {
+                                const gameData = change.doc.data();
+                                gameData.id = change.doc.id;
             
-                            if (teamRefId) {
-                                try {
-                                    const teamDoc = await teamRefId.get(); // Use await inside the async function
-                                    if (teamDoc.exists) {
-                                        const teamData = teamDoc.data();
-                                        oDocument.minAttendance = teamData.MinAttendance; // Add minAttendance to the game document
-                                        console.log("Team Data:", teamData); // Log the team data
-                                    } else {
-                                        console.warn("No such team!");
-                                        oDocument.minAttendance = 0; // Or some default value if the team doesn't exist.
+                                if (change.type === "added") {
+                                    console.log(gameData);
+                                    gameData.date = gameData.date ? gameData.date.toDate() : null;
+                                    gameData.attendanceCount = 0;
+                                    gameData.minAttendance = team ? team.MinAttendance : 0;
+                                    const attendance = await this._getGameAttendance(gameData.id);
+                                    gameData.attendanceCount = attendance.length;
+                                    gamesModelData.push(gameData);
+                                } else if (change.type === "modified") {
+                                    const index = gamesModelData.findIndex(game => game.id === gameData.id);
+                                    if (index > -1) {
+                                        gamesModelData[index] = gameData;
                                     }
-                                } catch (error) {
-                                    console.error("Error getting team data:", error);
-                                    oDocument.minAttendance = 0; // Handle errors gracefully
+                                } else if (change.type === "removed") {
+                                    const index = gamesModelData.findIndex(game => game.id === gameData.id);
+                                    if (index > -1) {
+                                        gamesModelData.splice(index, 1);
+                                    }
                                 }
-                            } else {
-                                oDocument.minAttendance = 0; // Default if teamRefId is null or undefined
-                            }
-                        } else if (change.type === "modified") {
-                            var index = appData.games.findIndex(game => game.id === oDocument.id);
-                            if (index > -1) {  //check if index exists
-                                appData.games[index] = oDocument;
-                            }
-                        } else if (change.type === "removed") {
-                            var index = appData.games.findIndex(game => game.id === oDocument.id);
-                            if (index > -1) { //check if index exists
-                                appData.games.splice(index, 1);
-                            }
-                        }
-                        return oDocument; // Return the modified document for Promise.all
-                    });
+                                return gameData; // Return the gameData (though we're pushing to the array directly)
+                            });
             
-                    Promise.all(promises).then(() => {
-                        this.getView().getModel("Games").refresh(true);
-                        this.getView().byId("myGamesList").getBinding("items").refresh();
+                            await Promise.all(gamePromises); // Wait for all changes within this snapshot to be processed
+                            resolve(); // Resolve the promise for this team's games
+                        }, (error) => {
+                            console.error("Error fetching games for team:", team, error);
+                            resolve(); // Resolve even on error to prevent blocking other teams
+                        });
                     });
+                    allPromises.push(teamGamesPromise);
+                });
             
-                }.bind(this));
+                await Promise.all(allPromises); // Wait for all teams' initial snapshots and processing
+            
+                // Now that all initial data and attendance counts are (likely) fetched, update the model
+                oModel.setProperty("/games", gamesModelData);
+                oModel.refresh(true);
+                this.getView().byId("myGamesList").getBinding("items").refresh(); // Consider if this is needed here
             },
             
             onMyTeamsSelect: function () {
@@ -196,6 +258,27 @@ sap.ui.define([
                 }); 
             },
 
+            onPressInvites: function () {
+                var oTeamsList = this.byId("myTeamsList");
+                if (!oTeamsList || oTeamsList.getSelectedItems().length === 0) {
+                    this.showMessage("noTeamSelected");
+                    return;
+                }
+
+                this._Invites ??= this.loadFragment({
+                    name: "com.ordago.wahu.view.fragments.Invites",
+                    controller: this
+                });
+
+                this._Invites.then((oDialog) => {
+                    oDialog.open();
+                });
+            },
+
+            onCloseDialogSendInvites: function (oEvent) {
+                this._Invites.then((oDialog) => oDialog.close());
+            },
+
             onCloseDialogAddPlayer: function (oEvent) {
                 if (this.getView().getModel("Teams").getContext("/currentPlayer").getObject()) {
                     this.clearAddedPlayer(oEvent);
@@ -279,6 +362,11 @@ sap.ui.define([
                 });
             },
 
+            onSendInvites: function (oEvent) {
+                var oInviteTable = this.byId("inviteTable");
+
+            },
+
             onSaveAddGame: function (oEvent) {
                 var oGamesModel = oEvent.getSource().getModel("Games");
                 var oGame = oGamesModel.getContext("/currentGame").getObject();
@@ -346,7 +434,7 @@ sap.ui.define([
                                             .limit(1);
 
                 queryAttendance.get().then(doc => {
-                    if (!doc.empty) {
+                    if (doc.empty) {
                         // Add the new attendance record to the subcollection
                         const newRecord = {
                             player: uid,
@@ -393,16 +481,6 @@ sap.ui.define([
                 });
 
             },
-
-            /* onTipoChangeAddGame: function() {
-                var oPropiedad = oEvent.getSource().getModel("Propiedades").getContext("/currentProp").getObject();
-			    oPropiedad.Tipo = oEvent.getSource().getSelectedItem().getKey();
-            },
-
-            onPaisChangeAddGame: function() {
-                var oPropiedad = oEvent.getSource().getModel("Propiedades").getContext("/currentProp").getObject();
-			    oPropiedad.Pais = oEvent.getSource().getSelectedItem().getKey();
-            }, */
 
             onPressFlagMyGames: function(oEvent) {
                 var selectedPath = this.getView().byId("myGamesList").getSelectedContextPaths(),
@@ -487,12 +565,8 @@ sap.ui.define([
                     actions: [sap.m.MessageBox.Action.YES, sap.m.MessageBox.Action.NO],
                     onClose: function (sAction) {
                         if (sAction === "YES") {
-                            me.collRefGames.doc(gameId).set({
-                                    "location": gameDoc.location,
-                                    "date": gameDoc.date,
-                                    "status": gameDoc.status,
-                                    "lock": !gameDoc.lock,
-                                    "reservation": gameDoc.reservation
+                            me.collRefGames.doc(gameId).update({
+                                "lock": !gameDoc.lock
                             } ).then(function () {
                                 me.showMessage( !gameDoc.lock ? 'GameLockSuccess' : 'GameUnlockedSuccess');
                             }.bind(me)).catch(function (error) {
@@ -504,18 +578,19 @@ sap.ui.define([
                 });
             },
 
-            onGameReserve: function(oEvent) {
+            onReserveCourt: function(oEvent) {
                 var me = this;
                 var selectedPath = this.getView().byId("myGamesList").getSelectedContextPaths(),
                     gameId = this.getView().getModel("Games").getProperty(selectedPath + "/id"),
                     gameDoc = this.getView().getModel("Games").getContext(String(selectedPath)).getObject();
                 
-                MessageBox.confirm(this.getView().getModel("i18n").getResourceBundle().getText(gameDoc.reservation ? 'ConfirmReserveCourt' : 'ConfirmReserveCourtCancel'), {
+                MessageBox.confirm(this.getView().getModel("i18n").getResourceBundle().getText(!gameDoc.reservation ? 'ConfirmReserveCourt' : 'ConfirmReserveCourtCancel'), {
                     actions: [sap.m.MessageBox.Action.YES, sap.m.MessageBox.Action.NO],
                     onClose: function (sAction) {
                         if (sAction === "YES") {
-                            gameDoc.reservation = !gameDoc.reservation;
-                            me.collRefGames.doc(gameId).set({ gameDoc }).then(function () {
+                            me.collRefGames.doc(gameId).update({
+                                "reservation": !gameDoc.reservation
+                            } ).then(function () {
                                 me.showMessage( gameDoc.lock ? 'GameReserveSuccess' : 'GameReserveDeleteSuccess');
                             }.bind(me)).catch(function (error) {
                                 console.error("Error changing Reservation in document: " + gameId + ": ", error);

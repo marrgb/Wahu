@@ -41,6 +41,40 @@ sap.ui.define([
 				}).catch((error) => {
 					console.log("error while logging in")
 				} );
+		},
+
+		onSignInPressed: function(event) {
+			var user = this.getOwnerComponent().getModel("User");
+			var oRouter = this.getOwnerComponent().getRouter();
+			// Get the Firebase Model
+			const firebase = this.getView().getModel("firebase");
+			const fireAuth = this.getView().getModel("firebase").getProperty("/fireAuth");
+			const provider = this.getView().getModel("firebase").getProperty("/provider");
+
+			fireAuth.signInWithPopup(provider)
+				.then((result) => {
+					console.log("Signed in");
+
+				}).catch((error) => {
+					console.log("error while signing in")
+				} );
+		},
+
+		onSignUpPressed: function(event) {
+			var user = this.getOwnerComponent().getModel("User");
+			var oRouter = this.getOwnerComponent().getRouter();
+			// Get the Firebase Model
+			const firebase = this.getView().getModel("firebase");
+			const fireAuth = this.getView().getModel("firebase").getProperty("/fireAuth");
+			const provider = this.getView().getModel("firebase").getProperty("/provider");
+
+			fireAuth.signUpWithPopup(provider)
+				.then((result) => {
+					console.log("Signed up");
+
+				}).catch((error) => {
+					console.log("error while signing up")
+				} );
 		}
 	});
 });

@@ -1,0 +1,51 @@
+<core:FragmentDefinition
+    xmlns:l="sap.ui.layout"
+	xmlns:f="sap.ui.layout.form"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns="sap.m">
+
+    <Dialog id="dialog-invite" title="{i18n>InviteToTeam}" class="sapUiPopupWithPadding"  resizable="true" contentHeight="20rem" contentWidth="40rem">
+        <content>
+            <Table id="inviteTable" items="{path: 'Invite>/invites', sorter: { path: 'timestamp', descending: false}}" mode="None">
+                <columns>
+                    <Column id="inviteColumnMail" width="20rem">
+                        <Text id="InviteTableMailText" text="{i18n>InviteMail}" />
+                    </Column>
+                    <Column id="inviteColumnStatus" width="5rem">
+                        <Text id="InviteTableStatusText" text="{i18n>InviteColumnStatusText}" />
+                    </Column>
+                    <Column id="inviteColumnAvatar" width="3rem">
+                        <!-- <Text text="{i18n>InviteColumnAvatarText}" /> -->
+                    </Column>
+                    <Column id="inviteColumnDeleteRow" width="10rem">
+                        <Text id="InviteTableActionsText" text="{i18n>InviteColumnActionsText}" />
+                        <!-- <Button id="inviteColumnCancelBtn" icon="sap-icon://cancel" type="Transparent" press="onDeleteInviteRow" tooltip="{i18n>InviteCancelBtnTooltip}"/> -->
+                    </Column>
+                </columns>
+                <items>
+                    <ColumnListItem id="_CLIInviteMail" type="Active">
+                        <cells>
+                            <ObjectIdentifier id="_OIIInviteName" title="{Invite>mail}" />
+                            <ObjectAttribute id="_OAIInviteDate" text="{Invite>timestamp}" />
+                            <Text id="_TIInviteStatus" text="{Invite>status}" />
+                            <Avatar id="_AIInviteAvatar" src="{Invite>avatar}" displaySize="XS" displayShape="Circle" />    
+                            <Button id="_btnInviteDeleteRow" icon="sap-icon://cancel" type="Transparent" press="onDeleteInviteRow" tooltip="{i18n>InviteCancelBtnTooltip}"/>
+                            
+                        </cells>
+                    </ColumnListItem>
+
+                </items>
+            
+            </Table>
+        </content>
+
+        <beginButton>
+            <Button id="_btnInvitesSave" text="Save" press="onSendInvites" />
+        </beginButton>
+
+        <endButton>
+            <Button id="_btnCloseIinvites" text="Cancel" press="onCloseDialogSendInvites" />
+        </endButton>
+    </Dialog>
+</core:FragmentDefinition>

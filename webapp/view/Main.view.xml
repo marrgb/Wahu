@@ -129,7 +129,7 @@
 						icon="sap-icon://soccer"
 						enabled="true"
 						expanded="true"
-						select="onMyGamesSelect"
+						select="onMyGamesSelectNew"
 						key="myGames">
 					</tnt:NavigationListItem>
 					<tnt:NavigationListItem id="_SideNavMyTeams"
@@ -176,6 +176,7 @@
 							id="myGamesList"
 							mode="SingleSelect"
 							headerText="{i18n>myGamesTitle}"
+							noDataText="{i18n>noGames}"
 							items="{path: 'Games>/games',
 								sorter: { path: 'date', descending: false} }">
 							<headerToolbar>
@@ -271,6 +272,10 @@
 											icon="sap-icon://select-appointments"
 											tooltip="{i18n>btnToolTipReserve}"
 											press="onReserveCourt" /> -->
+										<Button id="_btnSendInvites"
+											icon="sap-icon://collaborate"
+											tooltip="{i18n>btnToolTipSendInvites}"
+											press="onPressInvites" />
 										<ToolbarSeparator id="_TBSeparatorMyTeamsList"/>
 										<Button id="_btnAddTeam"
 											icon="sap-icon://add"
@@ -341,8 +346,14 @@
 								<l:BlockLayoutCell id="BlockLayoutCellAboutWahuTitle">
 									<Title id="AboutWahuSectionTitle"
 										titleStyle="H5"
-										text="“No preguntes qué pueden hacer por ti tus compañeros. Pregunta qué puedes hacer tú por ellos”"
+										text="{i18n>aboutWahVision}"
 										class="sapUiSmallMargin" />
+                  					<Text
+										id="AboutWahuTitleSignature"
+										wrappingType="Hyphenated"
+                    					textAlign="End"
+										text="{i18n>aboutWahVisionSignature}"
+										class="sapUiSmallMargin"/>
 								</l:BlockLayoutCell>
 							</l:BlockLayoutRow>
 

@@ -56,7 +56,6 @@ sap.ui.define([
                     const messaging = this.getModel("firebase").getProperty("/fcm");
                     // Get registration token. Initially this makes a network call, once retrieved
                     // subsequent calls to getToken will return from cache.
-                    // OLD BJqKxtMq2MqpI0q81kc35jGCLPRtoGtwCoq_mKF2FnK85DcRPttqh869-frw6y6fMfmbjhxd-sjygh40yY03LgM 
                     messaging.getToken({ vapidKey: 'BDH61zT-tsembJMqhS0Ok4rpKljMbPkrLvOs6Olno_-VnDqebKoI-GGyz43Z-PB887tq3-F99qOh8e0VQLmGS5Q' }).then((currentToken) => {
                         if (currentToken) {
                             // Send the token to your server and update the UI if necessary
