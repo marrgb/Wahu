@@ -5,7 +5,7 @@
 	xmlns:core="sap.ui.core"
 	xmlns="sap.m">
 
-  	<Dialog id="dialog-add-team" title="{i18n>Create}"
+  	<Dialog id="dialog-add-player" title="{i18n>Create}"
             contentWidth= "550px"
 			contentHeight= "300px"
 			draggable= "true">

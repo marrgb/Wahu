@@ -15,6 +15,20 @@ sap.ui.define([
 
             collRefGames: null,
 
+            statusTooltip: function (sStatus) {
+                var oBundle = this.getView().getModel("i18n").getResourceBundle();
+                switch (sStatus) {
+                    case "A":
+                        return oBundle.getText("accepted");
+                    case "B":
+                        return oBundle.getText("rejected");
+                    case "C":
+                        return oBundle.getText("pending");
+                    default:
+                        return sStatus;
+                }
+            },
+
             onInit: function () {
                 // Get the Firebase Model
                 const firebaseModel = this.getOwnerComponent().getModel("firebase");
@@ -28,6 +42,7 @@ sap.ui.define([
                 // const collRefNavs = firestore.collection("Navigation"),
                 this.collRefGames = firestore.collection("games");
                 this.collRefTeams = firestore.collection("teams");
+                this.collRefPlayers = firestore.collection("players");
             },
 
             _getPlayerID: async function (uuid) {
@@ -265,6 +280,58 @@ sap.ui.define([
                     return;
                 }
 
+                var oTeam = oTeamsList.getSelectedItem().getBindingContext("Teams").getObject();
+                var sTeamId = oTeam.id;
+                var oTeamRef = this.collRefTeams.doc(sTeamId);
+
+                this.clearInvitesModel();
+
+                const collRefInvites = oTeamRef.collection("invites");
+
+                collRefInvites.onSnapshot(function (snapshot) {
+                    var oModel = this.getView().getModel("Invite");
+                    var appData = oModel.getData();
+
+                    snapshot.docChanges().forEach(function (change) {
+                        var oDocument = change.doc.data();
+                        oDocument.id = change.doc.id;
+
+                        if (change.type === "added") {
+                            this.collRefPlayers.doc(oDocument.player).get().then(function (playerDoc) {
+                                if (playerDoc.exists) {
+                                    oDocument.email = playerDoc.data().email;
+                                    if (oDocument.timestamp) {
+                                        oDocument.timestamp = oDocument.timestamp.toDate();
+                                    }
+                                    appData.invites.push(oDocument);
+                                    oModel.refresh(true);
+                                }
+                            }.bind(this));
+                        } else if (change.type === "modified") {
+                            var index = appData.invites.map(function (document) {
+                                return document.id;
+                            }).indexOf(oDocument.id);
+                            this.collRefPlayers.doc(oDocument.player).get().then(function (playerDoc) {
+                                if (playerDoc.exists) {
+                                    oDocument.email = playerDoc.data().email;
+                                    if (oDocument.timestamp) {
+                                        oDocument.timestamp = oDocument.timestamp.toDate();
+                                    }
+                                    appData.invites[index] = oDocument;
+                                    oModel.refresh(true);
+                                }
+                            }.bind(this));
+                        } else if (change.type === "removed") {
+                            var index = appData.invites.map(function (document) {
+                                return document.id;
+                            }).indexOf(oDocument.id);
+                            appData.invites.splice(index, 1);
+                            oModel.refresh(true);
+                        }
+                    }.bind(this));
+                }.bind(this));
+
+
                 this._Invites ??= this.loadFragment({
                     name: "com.ordago.wahu.view.fragments.Invites",
                     controller: this
@@ -359,6 +426,134 @@ sap.ui.define([
                             });
                         }
                     }
+                });
+            },
+ 
+            onAddInvite: function (oEvent) {
+                var oView = this.getView();
+                var oInviteTable = this.byId("inviteTable");
+
+                var oDialog = new sap.m.Dialog({
+                    title: this.getView().getModel("i18n").getResourceBundle().getText("addPlayer"),
+                    content: new sap.m.Input("playerEmail", {
+                        placeholder: this.getView().getModel("i18n").getResourceBundle().getText("PlayerEmail")
+                    }),
+                    beginButton: new sap.m.Button({
+                        text: this.getView().getModel("i18n").getResourceBundle().getText("Create"),
+                        type: sap.m.ButtonType.Accept,
+                        press: function () {
+                            var sEmail = sap.ui.getCore().byId("playerEmail").getValue();
+                            if (sEmail) {
+                                this._invitePlayer(sEmail);
+                                oDialog.close();
+                            } else {
+                                this.showMessage("enterEmail");
+                            }
+                        }.bind(this)
+                    }),
+                    endButton: new sap.m.Button({
+                        text: this.getView().getModel("i18n").getResourceBundle().getText("Cancel"),
+                        press: function () {
+                            oDialog.close();
+                        }
+                    }),
+                    afterClose: function () {
+                        oDialog.destroy();
+                    }
+                });
+
+                oView.addDependent(oDialog);
+                oDialog.open();
+            },
+
+            _invitePlayer: function (sEmail) {
+                var oTeamsList = this.byId("myTeamsList");
+                var oTeam = oTeamsList.getSelectedItem().getBindingContext("Teams").getObject();
+                var sTeamId = oTeam.id;
+                var me = this;
+
+                this.collRefPlayers.where("email", "==", sEmail).get().then(function (oPlayerSnapshot) {
+                    if (oPlayerSnapshot.empty) {
+                        // Player does not exist, create new player
+                        me.collRefPlayers.add({
+                            email: sEmail,
+                            UUID: "",
+                            name: "",
+                            positions: ""
+                        }).then(function (oNewPlayer) {
+                            me.showMessage("playerCreated");
+                            me._createInvite(sTeamId, oNewPlayer.id);
+                        });
+                    } else {
+                        // Player exists
+                        me.showMessage("playerExists");
+                        me._createInvite(sTeamId, oPlayerSnapshot.docs[0].id);
+                    }
+                });
+            },
+
+            _createInvite: function (sTeamId, sPlayerId) {
+                var me = this;
+                var oTeamRef = this.collRefTeams.doc(sTeamId);
+
+                // Add invite to subcollection
+                oTeamRef.collection("invites").add({
+                    player: sPlayerId,
+                    status: 'C',
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                }).then(function () {
+                    // Add player to team's player array
+                    oTeamRef.update({
+                        players: firebase.firestore.FieldValue.arrayUnion(sPlayerId)
+                    }).then(function () {
+                        me.showMessage("playerInvited");
+
+                        oTeamRef.get().then(function (oTeamDoc) {
+                            if (oTeamDoc.exists) {
+                                const sTeamName = oTeamDoc.data().name;
+                                const firebaseFunctions = me.getOwnerComponent().getModel("firebase").getProperty("/functions");
+                                const sendPlayerInviteEmail = firebaseFunctions.httpsCallable('sendPlayerInviteEmail');
+                                sendPlayerInviteEmail({ sPlayerId: sPlayerId, sTeamName: sTeamName })
+                                    .then(function (result) {
+                                        console.log("Cloud function executed successfully", result);
+                                        me.showMessage("emailSentSuccess");
+                                    })
+                                    .catch(function (error) {
+                                        console.error("Error calling cloud function", error);
+                                        me.showMessage("emailSentError");
+                                    });
+                            }
+                        });
+
+                    });
+                });
+            },
+
+            onDeleteInviteRow: function(oEvent) {
+                var oContext = oEvent.getSource().getBindingContext("Invite");
+                var oInvite = oContext.getObject();
+                var sPlayerId = oInvite.player;
+                var sInviteId = oInvite.id;
+                var oTeamsList = this.byId("myTeamsList");
+                var oTeam = oTeamsList.getSelectedItem().getBindingContext("Teams").getObject();
+                var sTeamId = oTeam.id;
+                var oTeamRef = this.collRefTeams.doc(sTeamId);
+                var me = this;
+
+                // 1. Remove player from team's 'players' array
+                oTeamRef.update({
+                    players: firebase.firestore.FieldValue.arrayRemove(sPlayerId)
+                }).then(function() {
+                    // 2. Delete the invite document
+                    oTeamRef.collection("invites").doc(sInviteId).delete().then(function() {
+                        me.showMessage("inviteDeleted");
+                    }).catch(function(error) {
+                        console.error("Error deleting invite: ", error);
+                        me.showMessage("inviteDeleteError");
+                    });
+                }).catch(function(error) {
+                    console.error("Error removing player from team: ", error);
+                    me.showMessage("playerRemoveError");
                 });
             },
 
@@ -667,6 +862,15 @@ sap.ui.define([
 
                 var attendanceModel = new JSONModel(oAttendance);
                 this.getView().setModel(attendanceModel, "Attendance");
+            },
+
+            clearInvitesModel: function () {
+                var oInvites = {
+                    invites: []
+                };
+
+                var invitesModel = new JSONModel(oInvites);
+                this.getView().setModel(invitesModel, "Invite");
             },
 
             clearAddedGame: function () {

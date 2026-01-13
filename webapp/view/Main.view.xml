@@ -140,13 +140,14 @@
 						key="myTeams"
 						select="onMyTeamsSelect">
 					</tnt:NavigationListItem>
-					<!-- <tnt:NavigationListItem id="_IDGenNavigationListItem3"
-						text="{i18n>playersTitle}"
-						icon="sap-icon://customer"
+					<tnt:NavigationListItem id="_SideNavMyFriends"
+						text="{i18n>myFriendsTitle}"
+						icon="sap-icon://contacts"
 						enabled="true"
 						expanded="true"
-						key="players">
-					</tnt:NavigationListItem> -->
+						key="myFriends"
+						select="onMyFriendsSelect">
+					</tnt:NavigationListItem>
 				</tnt:NavigationList>
 				<tnt:fixedItem>
 					<tnt:NavigationList id="_IDGenNavigationListFooter">
@@ -324,6 +325,15 @@
 							class="sapUiContentPadding">
 						<Text id="_IDGenText5" text="Child 2" />
 					</ScrollContainer>
+
+					<ScrollContainer
+						id="myFriends"
+						horizontal="false"
+						vertical="true"
+						height="100%"
+						class="sapUiContentPadding">
+					</ScrollContainer>
+
 					<ScrollContainer
 						id="aboutWahu"
 						horizontal="false"

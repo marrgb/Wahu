@@ -6,6 +6,10 @@
     "rules": "firestore.rules",
     "indexes": "firestore.indexes.json"
   },
+  "functions": {
+    "source": "functions",
+    "runtime": "nodejs22"
+  },
   "hosting": {
     "public": "webapp",
     "ignore": [
@@ -13,8 +17,5 @@
       "**/.*",
       "**/node_modules/**"
     ]
-  },
-  "dataconnect": {
-    "source": "dataconnect"
   }
 }

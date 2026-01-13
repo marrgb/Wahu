@@ -26,6 +26,9 @@ sap.ui.define([
 			// Create a Authentication reference
 			const fireAuth = firebase.auth();
 
+			// Create a Functions reference
+			const functions = firebase.functions();
+
 			// Create the Provider
 			var provider = new firebase.auth.GoogleAuthProvider();
 			provider.addScope("profile");
@@ -39,7 +42,8 @@ sap.ui.define([
 				firestore: firestore,
 				fireAuth: fireAuth,
 				provider: provider,
-				fcm: messaging
+				fcm: messaging,
+				functions: functions
 			};
 
 			// Create a Firebase model out of the oFirebase service object which contains all required Firebase services
