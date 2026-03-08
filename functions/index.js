@@ -2,19 +2,25 @@
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
 const nodemailer = require("nodemailer");
+const { defineString } = require("firebase-functions/params");
 
 admin.initializeApp();
 
-// Configure your email transport here.
-// NOTE: Storing credentials directly in code is not recommended for production.
-// Use Firebase environment configuration:
-// firebase functions:config:set nodemailer.user="your-email@gmail.com"
-// firebase functions:config:set nodemailer.pass="your-app-password"
+// Define parameters for nodemailer credentials.
+// For local testing, create a file named .env in the functions directory (i.e. functions/.env)
+// with the following content:
+// NODEMAILER_USER=your-email@gmail.com
+// NODEMAILER_PASS=your-app-password
+const nodemailerUser = defineString("NODEMAILER_USER", {description: "invitacioneswahu@gmail.com"});
+const nodemailerPass = defineString("NODEMAILER_PASS", {description: "Tlannister#3"});
+
 const mailTransport = nodemailer.createTransport({
     service: "gmail",
     auth: {
-        user: functions.config().nodemailer.user,
-        pass: functions.config().nodemailer.pass,
+//        user: nodemailerUser.value(),
+//        pass: nodemailerPass.value(),
+        user: nodemailerUser,
+        pass: nodemailerPass,
     },
 });
 
