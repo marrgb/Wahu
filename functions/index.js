@@ -12,7 +12,7 @@ admin.initializeApp();
 // NODEMAILER_USER=your-email@gmail.com
 // NODEMAILER_PASS=your-app-password
 const nodemailerUser = defineString("NODEMAILER_USER", {description: "invitacioneswahu@gmail.com"});
-const nodemailerPass = defineString("NODEMAILER_PASS", {description: "Tlannister#3"});
+const nodemailerPass = defineString("NODEMAILER_PASS", {description: "Contraseña"});
 
 const mailTransport = nodemailer.createTransport({
     service: "gmail",
