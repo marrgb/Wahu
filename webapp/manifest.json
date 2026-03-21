@@ -81,13 +81,24 @@
         {
           "name": "RouteMain",
           "pattern": ":?query:",
-          "target": ["TargetMain"]
+          "target": [
+            "TargetMain"
+          ]
         },
-				{
-					"pattern": "notLogged",
-					"name": "RouteNotLogged",
-					"target": ["TargetNotLogged"]
-				}
+        {
+          "pattern": "notLogged",
+          "name": "RouteNotLogged",
+          "target": [
+            "TargetNotLogged"
+          ]
+        },
+        {
+          "name": "RouteInvite",
+          "pattern": "invite/{teamId}/{inviteId}",
+          "target": [
+            "TargetInvite"
+          ]
+        }
       ],
       "targets": {
         "TargetMain": {
@@ -97,12 +108,18 @@
           "viewId": "Main",
           "viewName": "Main"
         },
-				"TargetNotLogged": {
+        "TargetNotLogged": {
           "viewType": "XML",
-					"viewId": "NoUserLoggedIn",
-					"viewName": "NoUserLoggedIn",
-					"transition": "show"
-				}
+          "viewId": "NoUserLoggedIn",
+          "viewName": "NoUserLoggedIn",
+          "transition": "show"
+        },
+        "TargetInvite": {
+          "viewType": "XML",
+          "viewId": "Invite",
+          "viewName": "Invite",
+          "transition": "slide"
+        }
       }
     },
     "rootView": {

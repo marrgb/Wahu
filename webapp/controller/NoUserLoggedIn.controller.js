@@ -68,7 +68,7 @@ sap.ui.define([
 			const fireAuth = this.getView().getModel("firebase").getProperty("/fireAuth");
 			const provider = this.getView().getModel("firebase").getProperty("/provider");
 
-			fireAuth.signUpWithPopup(provider)
+			fireAuth.signInWithPopup(provider)
 				.then((result) => {
 					console.log("Signed up");
 

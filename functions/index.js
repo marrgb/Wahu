@@ -7,40 +7,33 @@ const { defineString } = require("firebase-functions/params");
 admin.initializeApp();
 
 // Define parameters for nodemailer credentials.
-// For local testing, create a file named .env in the functions directory (i.e. functions/.env)
-// with the following content:
-// NODEMAILER_USER=your-email@gmail.com
-// NODEMAILER_PASS=your-app-password
 const nodemailerUser = defineString("NODEMAILER_USER", {description: "invitacioneswahu@gmail.com"});
 const nodemailerPass = defineString("NODEMAILER_PASS", {description: "Contraseña"});
 
 const mailTransport = nodemailer.createTransport({
     service: "gmail",
     auth: {
-//        user: nodemailerUser.value(),
-//        pass: nodemailerPass.value(),
-        user: nodemailerUser,
-        pass: nodemailerPass,
+        user: nodemailerUser.value(),
+        pass: nodemailerPass.value(),
     },
 });
 
-exports.sendPlayerInviteEmail = functions.https.onCall(async (data, context) => {
-    const { sPlayerId, sTeamName } = data;
+exports.sendPlayerInviteEmail = functions.https.onCall(async (request, context) => {
+    const { sPlayerId, sTeamName } = request.data;
 
     if (!sPlayerId || !sTeamName) {
         throw new functions.https.HttpsError(
             "invalid-argument",
-            "The function must be called with two arguments 'sPlayerId' and 'sTeamName'."
+            "The function must be called with 'sPlayerId' and 'sTeamName'."
         );
     }
 
     try {
+        // Get player data
         const playerDoc = await admin.firestore().collection("players").doc(sPlayerId).get();
-
         if (!playerDoc.exists) {
             throw new functions.https.HttpsError("not-found", "Player not found.");
         }
-
         const playerData = playerDoc.data();
         const playerEmail = playerData.email;
 
@@ -49,18 +42,40 @@ exports.sendPlayerInviteEmail = functions.https.onCall(async (data, context) => 
             return { message: "No email address found for the player." };
         }
 
+        // Get team ID from team name
+        const teamsRef = admin.firestore().collection("teams");
+        const teamSnapshot = await teamsRef.where("name", "==", sTeamName).limit(1).get();
+
+        if (teamSnapshot.empty) {
+            throw new functions.https.HttpsError("not-found", `Team with name "${sTeamName}" not found.`);
+        }
+        const teamId = teamSnapshot.docs[0].id;
+
+        // Create an invite document in the team's subcollection
+        const inviteRef = await admin.firestore()
+            .collection("teams")
+            .doc(teamId)
+            .collection("invites")
+            .add({
+                playerId: sPlayerId,
+                status: "pending"
+            });
+        const inviteId = inviteRef.id;
+
+        // Create the invitation link
+        const inviteLink = `https://wahu-15b45.web.app/#/invite/${teamId}/${inviteId}`;
+
+        // Send the email
         const mailOptions = {
             from: '"Wahu" <invitacioneswahu@gmail.com>',
             to: playerEmail,
             subject: `You have been invited to join ${sTeamName}!`,
-            text: `Hi ${playerData.name || 'Player'},
-
-You have been invited to join the team "${sTeamName}" on Wahu.
-
-To accept or reject the invitation, please open the Wahu app.
-
-Thanks,
-The Wahu Team`,
+            html: `<p>Hi ${playerData.name || 'Player'},</p>
+                   <p>You have been invited to join the team "${sTeamName}" on Wahu.</p>
+                   <p>Click the link below to accept or decline the invitation:</p>
+                   <a href="${inviteLink}">${inviteLink}</a>
+                   <p>Thanks,</p>
+                   <p>The Wahu Team</p>`,
         };
 
         await mailTransport.sendMail(mailOptions);
@@ -68,10 +83,14 @@ The Wahu Team`,
         return { message: "Email sent successfully." };
 
     } catch (error) {
-        console.error("There was an error sending the email:", error);
+        console.error("There was an error:", error);
+        if (error instanceof functions.https.HttpsError) {
+            throw error; // Re-throw HttpsError as is
+        }
         throw new functions.https.HttpsError(
             "internal",
-            "An error occurred while trying to send the email."
+            "An error occurred while processing the invitation.",
+            { errorDetails: error.message }
         );
     }
 });

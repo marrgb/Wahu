@@ -1,0 +1,15 @@
+<mvc:View
+    controllerName="com.ordago.wahu.controller.Invite"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m">
+    <Page id="invitePage" title="{i18n>invitePageTitle}">
+        <VBox class="sapUiSmallMargin">
+            <Text text="{i18n>teamInviteText}" />
+            <Title text="{Team>/name}" />
+            <HBox>
+                <Button text="{i18n>acceptButtonText}" press="onAcceptInvite" type="Accept" />
+                <Button text="{i18n>declineButtonText}" press="onDeclineInvite" type="Reject" />
+            </HBox>
+        </VBox>
+    </Page>
+</mvc:View>
