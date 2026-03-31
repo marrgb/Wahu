@@ -2,7 +2,7 @@ sap.ui.define([
 	"sap/ui/core/mvc/Controller",
 	"com/ordago/wahu/model/formatter",
 	"com/ordago/wahu/Firebase"
-], function(Controller, formatter, Firebase) {
+], function (Controller, formatter, Firebase) {
 	"use strict";
 
 	return Controller.extend("com.ordago.wahu.controller.NoUserLoggedIn", {
@@ -26,45 +26,19 @@ sap.ui.define([
 			const User = this.getView().getModel("User");
 		},
 
-		onAvatarPressed: function(event) {
-			var user = this.getOwnerComponent().getModel("User");
-			var oRouter = this.getOwnerComponent().getRouter();
-			// Get the Firebase Model
-			const firebase = this.getView().getModel("firebase");
-			const fireAuth = this.getView().getModel("firebase").getProperty("/fireAuth");
-			const provider = this.getView().getModel("firebase").getProperty("/provider");
-
-			fireAuth.signInWithPopup(provider)
-				.then((result) => {
-					console.log("Logged in");
-
-				}).catch((error) => {
-					console.log("error while logging in")
-				} );
+		onAvatarPressed: function (event) {
+			this._onSignIn();
 		},
 
-		onSignInPressed: function(event) {
-			var user = this.getOwnerComponent().getModel("User");
-			var oRouter = this.getOwnerComponent().getRouter();
-			// Get the Firebase Model
-			const firebase = this.getView().getModel("firebase");
-			const fireAuth = this.getView().getModel("firebase").getProperty("/fireAuth");
-			const provider = this.getView().getModel("firebase").getProperty("/provider");
-
-			fireAuth.signInWithPopup(provider)
-				.then((result) => {
-					console.log("Signed in");
-
-				}).catch((error) => {
-					console.log("error while signing in")
-				} );
+		onSignInPressed: function (event) {
+			this._onSignIn();
 		},
 
-		onSignUpPressed: function(event) {
-			var user = this.getOwnerComponent().getModel("User");
-			var oRouter = this.getOwnerComponent().getRouter();
-			// Get the Firebase Model
-			const firebase = this.getView().getModel("firebase");
+		onSignUpPressed: function (event) {
+			this._onSignIn();
+		},
+
+		_onSignIn: function () {
 			const fireAuth = this.getView().getModel("firebase").getProperty("/fireAuth");
 			const provider = this.getView().getModel("firebase").getProperty("/provider");
 
@@ -74,7 +48,7 @@ sap.ui.define([
 
 				}).catch((error) => {
 					console.log("error while signing up")
-				} );
+				});
 		}
 	});
 });

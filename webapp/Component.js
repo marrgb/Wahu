@@ -3,13 +3,13 @@
  */
 
 sap.ui.define([
-        "sap/ui/core/UIComponent",
-        "sap/ui/Device",
-        "com/ordago/wahu/model/models",
-        "./Firebase",
-        "sap/m/MessageToast",
-        "sap/ui/model/json/JSONModel"
-    ],
+    "sap/ui/core/UIComponent",
+    "sap/ui/Device",
+    "com/ordago/wahu/model/models",
+    "./Firebase",
+    "sap/m/MessageToast",
+    "sap/ui/model/json/JSONModel"
+],
     function (UIComponent, Device, models, Firebase, MessageToast, JSONModel) {
         "use strict";
 
@@ -37,71 +37,100 @@ sap.ui.define([
                 // set the firebase model by calling the initializeFirebase function in the Firebase.js file
                 this.setModel(Firebase.initializeFirebase(), "firebase");
 
+                // User Handling
+                // We instantiate a model for the user so to have one single source of truth for the user data
+                // 1. Create an empty JSON Model for the user
+                const oUserModel = new JSONModel({
+                    isLoggedIn: false,
+                    uid: null,
+                    email: null,
+                    displayName: null,
+                    photoURL: null
+                });
+                // 2. Set it globally at the Component level so ALL views can access it
+                this.setModel(oUserModel, "User");
+
                 // AUTHENTICATION
                 // Create a Fireauth reference
                 const fireAuth = this.getModel("firebase").getProperty("/fireAuth");
 
                 // If Sign in is successfull, then observer below with trigger
                 // Get user data from the observer
-                firebase.auth().onAuthStateChanged(function(user) {
-                    var User = new JSONModel(user);
-                    this.setModel(User, "User");
-                if (user) {
-                    // User is signed in.
-                    var uid = user.uid;
+                firebase.auth().onAuthStateChanged(function (user) {
+                    if (user) {
+                        // User is signed in.
+                        oUserModel.setData({
+                            isLoggedIn: true,
+                            uid: user.uid,
+                            email: user.email,
+                            displayName: user.displayName,
+                            photoURL: user.photoURL
+                        });
 
-                    // CLOUD MESSAGING FCM
-                    // Since we are logged in now we will ask the user permission to send notifications
-                    // Create a FCM reference
-                    const messaging = this.getModel("firebase").getProperty("/fcm");
-                    // Get registration token. Initially this makes a network call, once retrieved
-                    // subsequent calls to getToken will return from cache.
-                    // vapidKey changed on 13/1/2026 due to Firebase project indicating so.  It seems this changed on 20/6/2023
-                    // old vapidKey: 'BDH61zT-tsembJMqhS0Ok4rpKljMbPkrLvOs6Olno_-VnDqebKoI-GGyz43Z-PB887tq3-F99qOh8e0VQLmGS5Q'
-                    messaging.getToken({ vapidKey: 'BMcRbQqNYvDnsKnv8ww4HBZQDFUgsXV9uE5fBoiVl6HWuE3PbKHozEi4LRmT37vpD5PsdVLL8x51bAj_PdEXBJ0' }).then((currentToken) => {
-                        if (currentToken) {
-                            // Send the token to your server and update the UI if necessary
+                        // CLOUD MESSAGING FCM
+                        // Since we are logged in now we will ask the user permission to send notifications
+                        // Create a FCM reference
+                        const messaging = this.getModel("firebase").getProperty("/fcm");
+                        // Get registration token. Initially this makes a network call, once retrieved
+                        // subsequent calls to getToken will return from cache.
+                        // vapidKey changed on 13/1/2026 due to Firebase project indicating so.  It seems this changed on 20/6/2023
+                        // old vapidKey: 'BDH61zT-tsembJMqhS0Ok4rpKljMbPkrLvOs6Olno_-VnDqebKoI-GGyz43Z-PB887tq3-F99qOh8e0VQLmGS5Q'
+                        messaging.getToken({ vapidKey: 'BMcRbQqNYvDnsKnv8ww4HBZQDFUgsXV9uE5fBoiVl6HWuE3PbKHozEi4LRmT37vpD5PsdVLL8x51bAj_PdEXBJ0' }).then((currentToken) => {
+                            if (currentToken) {
+                                // Send the token to your server and update the UI if necessary
+                                // ...
+                            } else {
+                                // Show permission request UI
+                                console.log('No registration token available. Request permission to generate one.');
+                                // ...
+                            }
+                        }).catch((err) => {
+                            console.log('An error occurred while retrieving token. ', err);
                             // ...
-                        } else {
-                            // Show permission request UI
-                            console.log('No registration token available. Request permission to generate one.');
-                            // ...
+                        });
+
+                        //FCM ask permission
+                        // messaging.requestPermission().then(function () {
+                        // 	console.log("Have permission");
+                        // 	return messaging.getToken();
+                        // }).then(function (token) {
+                        // 	console.log(token);
+                        // }).catch(function (err) {
+                        // 	console.log("Error occured");
+                        // });
+
+                        // Show message in foreground (if desired)
+                        messaging.onMessage(function (payload) {
+                            console.log("Message received. ", payload);
+                            var notification = JSON.parse(payload.data.notification);
+                            const notificationTitle = notification.title;
+                            const notificationOptions = {
+                                body: notification.body,
+                                icon: notification.icon,
+                            };
+                            var notification = new Notification(notificationTitle, notificationOptions);
+                            return notification;
+                        });
+
+                        var oRouter = this.getRouter();
+                        if (!window.location.hash.includes("invite/")) {
+                            oRouter.navTo("RouteMain");
                         }
-                    }).catch((err) => {
-                        console.log('An error occurred while retrieving token. ', err);
-                        // ...
-                    });
 
-                    //FCM ask permission
-                    // messaging.requestPermission().then(function () {
-                    // 	console.log("Have permission");
-                    // 	return messaging.getToken();
-                    // }).then(function (token) {
-                    // 	console.log(token);
-                    // }).catch(function (err) {
-                    // 	console.log("Error occured");
-                    // });
-
-                    // Show message in foreground (if desired)
-                    messaging.onMessage(function (payload) {
-                        console.log("Message received. ", payload);
-                        var notification = JSON.parse(payload.data.notification);
-                        const notificationTitle =notification.title;
-                        const notificationOptions = {
-                            body: notification.body,
-                            icon: notification.icon,
-                        };
-                        var notification = new Notification(notificationTitle, notificationOptions);
-                        return notification;
-                    });
-
-                    this.getRouter().navTo("RouteMain");
-
-                } else {
-                    // User is signed out.
-                    var oRouter = this.getRouter();
-                    oRouter.navTo("RouteNotLogged");
-                }
+                    } else {
+                        // User is signed out.
+                        oUserModel.setData({
+                            isLoggedIn: false,
+                            uid: null,
+                            email: null,
+                            displayName: null,
+                            photoURL: null
+                        });
+                        var oRouter = this.getRouter();
+                        if (!window.location.hash.includes("invite/")) {
+                            oRouter.navTo("RouteNotLogged");
+                        }
+                    }
                 }.bind(this));
 
             },
